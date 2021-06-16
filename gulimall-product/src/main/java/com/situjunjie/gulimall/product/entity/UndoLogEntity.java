@@ -12,7 +12,7 @@ import lombok.Data;
  * 
  * @author situjunjie
  * @email situjunjie@vip.qq.com
- * @date 2021-06-15 20:31:08
+ * @date 2021-06-16 13:30:29
  */
 @Data
 @TableName("undo_log")
@@ -39,7 +39,7 @@ public class UndoLogEntity implements Serializable {
 	/**
 	 * 
 	 */
-	private byte[] rollbackInfo;
+	private String rollbackInfo;
 	/**
 	 * 
 	 */
