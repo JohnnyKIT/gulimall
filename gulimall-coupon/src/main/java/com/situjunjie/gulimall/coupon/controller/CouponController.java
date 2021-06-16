@@ -5,6 +5,8 @@ import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,10 +28,17 @@ import com.situjunjie.common.utils.R;
  * @date 2021-06-16 13:31:15
  */
 @RestController
+@RefreshScope
 @RequestMapping("coupon/coupon")
 public class CouponController {
     @Autowired
     private CouponService couponService;
+
+    @Value("${coupon.username}")
+    private String username;
+
+    @Value("${coupon.age}")
+    private String age;
 
     /**
      * 测试feign调用
@@ -40,6 +49,15 @@ public class CouponController {
         CouponEntity couponEntity = new CouponEntity();
         couponEntity.setCouponName("满30减10");
         return R.ok().put("coupon",couponEntity);
+    }
+
+    /**
+     * 测试配置中心
+     */
+    @RequestMapping("/testprop")
+    public R testProp(){
+
+        return R.ok().put("username",username).put("age",age);
     }
 
     /**
