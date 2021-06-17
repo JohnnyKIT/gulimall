@@ -1,7 +1,11 @@
 package com.situjunjie.gulimall.product.service.impl;
 
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -24,6 +28,35 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public List<CategoryEntity> listWithTree() {
+        //先查询出所有
+        List<CategoryEntity> all = baseMapper.selectList(null);
+
+        //构建树形分类
+        return all.stream().filter(categoryEntity -> categoryEntity.getParentCid()==0)
+                .map(categoryEntity -> {categoryEntity.setChildrens(getChildrens(categoryEntity,all));
+                                        return categoryEntity;
+                                        })
+                                        .sorted((m1,m2)-> {return (m1.getSort()==null?0:m1.getSort())-(m2.getSort()==null?0:m2.getSort());})
+                                        .collect(Collectors.toList());
+
+
+
+
+    }
+
+    //递归获取自分类的方法
+    private List<CategoryEntity> getChildrens(CategoryEntity root, List<CategoryEntity> all) {
+
+        return all.stream().filter(menu->{return root.getCatId().equals(menu.getParentCid());})
+                .map(categoryEntity -> {categoryEntity.setChildrens(getChildrens(categoryEntity,all));return categoryEntity;})
+                .sorted((m1,m2)->{return (m1.getSort()==null?0:m1.getSort())-(m2.getSort()==null?0:m2.getSort());})
+                .collect(Collectors.toList());
+
+
     }
 
 }

@@ -1,6 +1,7 @@
 package com.situjunjie.gulimall.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -30,6 +31,19 @@ import com.situjunjie.common.utils.R;
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
+
+
+    /**
+     * 树形分级查询出所有分类
+     */
+    @RequestMapping("/list/tree")
+    // @RequiresPermissions("product:category:list")
+    public R listWithTree(){
+
+        List<CategoryEntity> list = categoryService.listWithTree();
+
+        return R.ok().put("category", list);
+    }
 
     /**
      * 列表
