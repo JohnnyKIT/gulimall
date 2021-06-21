@@ -91,6 +91,16 @@ public class CategoryController {
     }
 
     /**
+     * 批量修改
+     */
+    @RequestMapping("/batch/update")
+    //@RequiresPermissions("product:category:update")
+    public R updateBatch(@RequestBody CategoryEntity[] category){
+        categoryService.updateBatchById(Arrays.asList(category));
+        return R.ok();
+    }
+
+    /**
      * 删除
      */
     @RequestMapping("/delete")
@@ -100,5 +110,7 @@ public class CategoryController {
 
         return R.ok();
     }
+
+
 
 }

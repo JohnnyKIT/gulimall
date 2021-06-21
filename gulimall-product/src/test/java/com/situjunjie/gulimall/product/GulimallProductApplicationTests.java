@@ -19,6 +19,8 @@ class GulimallProductApplicationTests {
     @Autowired
     CategoryService categoryService;
 
+
+
     @Test
     void contextLoads() {
         List<BrandEntity> list = brandService.list(null);
@@ -33,5 +35,7 @@ class GulimallProductApplicationTests {
         List<CategoryEntity> categoryEntities = categoryService.listWithTree();
         System.out.println(categoryEntities);
     }
+
+
 
 }
