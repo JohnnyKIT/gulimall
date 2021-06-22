@@ -1,10 +1,12 @@
 package com.situjunjie.gulimall.product.controller;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,7 @@ import com.situjunjie.gulimall.product.service.BrandService;
 import com.situjunjie.common.utils.PageUtils;
 import com.situjunjie.common.utils.R;
 
+import javax.validation.Valid;
 
 
 /**
@@ -59,8 +62,17 @@ public class BrandController {
      */
     @RequestMapping("/save")
    // @RequiresPermissions("product:brand:save")
-    public R save(@RequestBody BrandEntity brand){
+    public R save(@Valid @RequestBody BrandEntity brand, BindingResult result){
+        Map<String,String> erros = new HashMap<>();
+
+        if(result.hasErrors()){
+            result.getFieldErrors().forEach(item->{
+                erros.put(item.getField(),item.getDefaultMessage());
+            });
+            return R.error(400,"请求提交异常").put("data",erros);
+        }else{
 		brandService.save(brand);
+        }
 
         return R.ok();
     }
