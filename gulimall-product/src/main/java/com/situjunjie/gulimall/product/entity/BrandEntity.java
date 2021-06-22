@@ -4,13 +4,12 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import com.situjunjie.common.valid.AddGroup;
 import com.situjunjie.common.valid.UpdateGroup;
+import com.situjunjie.common.valid.ValidInList;
 import lombok.Data;
 import org.hibernate.validator.constraints.URL;
-
 import javax.validation.constraints.*;
 
 /**
@@ -51,12 +50,14 @@ public class BrandEntity implements Serializable {
 	/**
 	 * 显示状态[0-不显示；1-显示]
 	 */
+
+	@ValidInList(groups = {UpdateGroup.class,AddGroup.class},message = "值必须为0、1",vals = {1,0})
 	private Integer showStatus;
 	/**
 	 * 检索首字母
 	 */
 	@NotEmpty(groups = {UpdateGroup.class,AddGroup.class})
-	@Pattern(regexp = "/^[a-zA-z]$/",message = "检索首字母必须是一个字母",groups = {UpdateGroup.class,AddGroup.class})
+	@Pattern(regexp = "^[a-zA-z]$",message = "检索首字母必须是一个字母",groups = {UpdateGroup.class,AddGroup.class})
 	private String firstLetter;
 	/**
 	 * 排序
