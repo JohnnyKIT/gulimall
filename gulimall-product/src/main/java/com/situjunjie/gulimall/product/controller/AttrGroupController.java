@@ -42,6 +42,18 @@ public class AttrGroupController {
         return R.ok().put("page", page);
     }
 
+    /**
+     * 按照三级分类ID查询列表
+     */
+    @RequestMapping("/list/{catelogId}")
+    // @RequiresPermissions("product:attrgroup:list")
+    public R listByCategory(@RequestParam Map<String, Object> params,@PathVariable("catelogId") Long categoryId){
+        System.out.println("进入方法中了");
+        PageUtils page = attrGroupService.queryPage(params,categoryId);
+
+        return R.ok().put("page", page);
+    }
+
 
     /**
      * 信息
