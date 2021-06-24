@@ -1,6 +1,8 @@
 package com.situjunjie.gulimall.product.service.impl;
 
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -18,12 +20,39 @@ public class CategoryBrandRelationServiceImpl extends ServiceImpl<CategoryBrandR
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
+        QueryWrapper<CategoryBrandRelationEntity> wrapper = new QueryWrapper<>();
+
+       // wrapper.eq("brand_id",params.get("brandId"));
         IPage<CategoryBrandRelationEntity> page = this.page(
                 new Query<CategoryBrandRelationEntity>().getPage(params),
-                new QueryWrapper<CategoryBrandRelationEntity>()
+                wrapper
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public List<CategoryBrandRelationEntity> queryByBrandId(Map<String, Object> params) {
+        QueryWrapper<CategoryBrandRelationEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("brand_id",params.get("brandId"));
+        List<CategoryBrandRelationEntity> list = baseMapper.selectList(wrapper);
+        return list;
+    }
+
+    @Override
+    public void update(Long brandId, String name) {
+
+        CategoryBrandRelationEntity entity = new CategoryBrandRelationEntity();
+        entity.setBrandId(brandId);
+        entity.setBrandName(name);
+        QueryWrapper<CategoryBrandRelationEntity> wrapper = new QueryWrapper<>();
+        baseMapper.update(entity,wrapper);
+
+    }
+
+    @Override
+    public void updateCategory(Long catId, String name) {
+        baseMapper.updateCategory(catId,name);
     }
 
 }

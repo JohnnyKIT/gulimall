@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.situjunjie.gulimall.product.service.CategoryBrandRelationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +33,9 @@ import com.situjunjie.common.utils.R;
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private CategoryBrandRelationService categoryBrandRelationService;
 
 
     /**
@@ -88,6 +93,18 @@ public class CategoryController {
     public R update(@RequestBody CategoryEntity category){
 		categoryService.updateById(category);
 
+        return R.ok();
+    }
+
+    /**
+     * 修改及其冗余字段
+     */
+    @Transactional
+    @RequestMapping("/update-detail")
+    //@RequiresPermissions("product:category:update")
+    public R updateDetail(@RequestBody CategoryEntity category){
+        categoryService.updateById(category);
+        categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
         return R.ok();
     }
 

@@ -1,15 +1,17 @@
 package com.situjunjie.gulimall.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.situjunjie.gulimall.product.entity.BrandEntity;
+import com.situjunjie.gulimall.product.entity.CategoryEntity;
+import com.situjunjie.gulimall.product.service.BrandService;
+import com.situjunjie.gulimall.product.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.web.bind.annotation.*;
 
 import com.situjunjie.gulimall.product.entity.CategoryBrandRelationEntity;
 import com.situjunjie.gulimall.product.service.CategoryBrandRelationService;
@@ -30,6 +32,26 @@ import com.situjunjie.common.utils.R;
 public class CategoryBrandRelationController {
     @Autowired
     private CategoryBrandRelationService categoryBrandRelationService;
+
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private BrandService brandService;
+
+
+
+    /**
+     * 获取品牌分类关联
+     */
+    @GetMapping("/catelog/list")
+    // @RequiresPermissions("product:categorybrandrelation:list")
+    public R listRelation(@RequestParam Map<String, Object> params){
+        List<CategoryBrandRelationEntity> list = categoryBrandRelationService.queryByBrandId(params);
+
+        return R.ok().put("data", list);
+    }
+
 
     /**
      * 列表
@@ -60,7 +82,12 @@ public class CategoryBrandRelationController {
     @RequestMapping("/save")
    // @RequiresPermissions("product:categorybrandrelation:save")
     public R save(@RequestBody CategoryBrandRelationEntity categoryBrandRelation){
+        CategoryEntity category = categoryService.getById(categoryBrandRelation.getCatelogId());
+        BrandEntity brand = brandService.getById(categoryBrandRelation.getBrandId());
+        categoryBrandRelation.setBrandName(brand.getName());
+        categoryBrandRelation.setCatelogName(category.getName());
 		categoryBrandRelationService.save(categoryBrandRelation);
+
 
         return R.ok();
     }

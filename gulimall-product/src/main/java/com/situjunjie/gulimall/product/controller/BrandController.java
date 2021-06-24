@@ -8,7 +8,9 @@ import java.util.Map;
 import com.situjunjie.common.valid.AddGroup;
 import com.situjunjie.common.valid.UpdateGroup;
 import com.situjunjie.common.valid.UpdateStatusGroup;
+import com.situjunjie.gulimall.product.service.CategoryBrandRelationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +40,9 @@ public class BrandController {
     @Autowired
     private BrandService brandService;
 
+    @Autowired
+    private CategoryBrandRelationService categoryBrandRelationService;
+
     /**
      * 列表
      */
@@ -45,7 +50,6 @@ public class BrandController {
    // @RequiresPermissions("product:brand:list")
     public R list(@RequestParam Map<String, Object> params){
         PageUtils page = brandService.queryPage(params);
-
         return R.ok().put("page", page);
     }
 
@@ -87,9 +91,23 @@ public class BrandController {
     }
 
     /**
+     * 修改包括别的表中的冗余数据
+     */
+    @RequestMapping("/updateDetail")
+    @Transactional
+    //@RequiresPermissions("product:brand:update")
+    public R updateDetail(@Validated(UpdateGroup.class) @RequestBody BrandEntity brand){
+
+        brandService.updateById(brand);
+        categoryBrandRelationService.update(brand.getBrandId(),brand.getName());
+
+        return R.ok();
+    }
+
+    /**
      * 修改状态
      */
-    @RequestMapping("/updateShowStatus")
+    @RequestMapping("/update/status")
     //@RequiresPermissions("product:brand:update")
     public R updateShowStatus(@Validated(UpdateStatusGroup.class) @RequestBody BrandEntity brand){
         brandService.updateById(brand);
