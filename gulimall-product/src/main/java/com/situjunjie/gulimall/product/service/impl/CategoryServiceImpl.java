@@ -1,9 +1,9 @@
 package com.situjunjie.gulimall.product.service.impl;
 
+import com.situjunjie.gulimall.product.entity.AttrGroupEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -45,6 +45,24 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
 
 
+
+    }
+
+    @Override
+    public Long[] getCatelogPath(Long catelogId) {
+        ArrayList<Long> list = new ArrayList<>();
+        findCatelogPath(catelogId,list);
+        Collections.reverse(list);
+        Long[] path = list.toArray(new Long[list.size()]);
+        return path;
+    }
+
+    private void findCatelogPath(Long catelogId, ArrayList<Long> list) {
+        list.add(catelogId);
+        CategoryEntity category = this.getById(catelogId);
+        if(category.getParentCid()!=0){
+            findCatelogPath(category.getParentCid(),list);
+        }
 
     }
 
