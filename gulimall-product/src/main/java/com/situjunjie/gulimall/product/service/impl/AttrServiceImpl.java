@@ -14,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ import com.situjunjie.gulimall.product.dao.AttrDao;
 import com.situjunjie.gulimall.product.entity.AttrEntity;
 import com.situjunjie.gulimall.product.service.AttrService;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 
 @Service("attrService")
@@ -44,6 +46,8 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
 
     @Autowired
     CategoryService categoryService;
+
+
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -134,5 +138,29 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
 
         return attrList;
     }
+
+    @Override
+    public PageUtils getRelatableAttr(Long attrGroupId,Map<String,Object> params) {
+        //直接找出要的Attr
+        //只能绑定同一分类的属性
+        AttrGroupEntity attrGroupEntity = attrGroupDao.selectOne(new QueryWrapper<AttrGroupEntity>().eq("attr_group_id", attrGroupId));
+
+        QueryWrapper<AttrEntity> wrapper = new QueryWrapper<AttrEntity>().eq("attr_type", ProductConst.AttrEnum.ATTR_TYPE_BASE.getCode()).eq("catelog_id",attrGroupEntity.getCatelogId());
+        //List<AttrEntity> attrList = this.list();
+        //待去除已绑定的Attr
+
+        List<AttrAttrgroupRelationEntity> relationEntities = attrAttrgroupRelationDao.selectList(null);
+        for (AttrAttrgroupRelationEntity entity:relationEntities
+             ) {
+            wrapper.and(w->{w.ne("attr_id",entity.getAttrId());});
+        }
+        IPage<AttrEntity> page = this.page(new Query<AttrEntity>().getPage(params), wrapper);
+
+        return new PageUtils(page);
+
+    }
+
+
+
 
 }

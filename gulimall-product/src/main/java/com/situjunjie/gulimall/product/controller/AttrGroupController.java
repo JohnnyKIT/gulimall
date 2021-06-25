@@ -138,5 +138,24 @@ public class AttrGroupController {
         return R.ok();
     }
 
+    /**
+     * 查询可关联的属性列表
+     */
+    @RequestMapping("/{attrGroupId}/noattr/relation")
+    public R getRelatableAttr(@PathVariable("attrGroupId")Long attrGroupId,@RequestParam Map<String,Object> params){
+
+        PageUtils page = attrService.getRelatableAttr(attrGroupId,params);
+        return R.ok().put("page",page);
+    }
+    /**
+     *
+     * 添加分组与属性的关联关系
+     * /product/attrgroup/attr/relation
+     */
+    @RequestMapping("/attr/relation")
+    public R relateAttrAndAttrGroup(@RequestBody List<AttrRelationVo> vos){
+        attrAttrgroupRelationService.relateAttrAndAttrGroup(vos);
+        return R.ok();
+    }
 
 }

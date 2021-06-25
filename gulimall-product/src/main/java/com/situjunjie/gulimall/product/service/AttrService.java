@@ -24,5 +24,7 @@ public interface AttrService extends IService<AttrEntity> {
     AttrRespVo getAttrInfo(Long attrId);
 
     List<AttrEntity> getAttrRelation(Long attrGroupId);
+
+    PageUtils getRelatableAttr(Long attrGroupId,Map<String,Object> params);
 }
 

@@ -81,7 +81,7 @@ public class AttrController {
         attrService.save(attrEntity);
         attr.setAttrId(attrEntity.getAttrId());
 
-        if(attr.getAttrType()== ProductConst.AttrEnum.ATTR_TYPE_BASE.getCode()) {
+        if(attr.getAttrType()== ProductConst.AttrEnum.ATTR_TYPE_BASE.getCode()&&attr.getAttrGroupId()!=null) {
             AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
             BeanUtils.copyProperties(attr, relationEntity);
 

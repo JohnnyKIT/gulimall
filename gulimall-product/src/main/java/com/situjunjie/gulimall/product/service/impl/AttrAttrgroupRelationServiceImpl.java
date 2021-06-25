@@ -42,4 +42,16 @@ public class AttrAttrgroupRelationServiceImpl extends ServiceImpl<AttrAttrgroupR
         baseMapper.deleteBatchRelation(relationList);
     }
 
+    @Override
+    public void relateAttrAndAttrGroup(List<AttrRelationVo> vos) {
+
+        List<AttrAttrgroupRelationEntity> list = vos.stream().map(attrRelate -> {
+            AttrAttrgroupRelationEntity entity = new AttrAttrgroupRelationEntity();
+            BeanUtils.copyProperties(attrRelate, entity);
+            return entity;
+        }).collect(Collectors.toList());
+        this.saveBatch(list);
+
+    }
+
 }
