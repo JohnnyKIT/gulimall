@@ -3,7 +3,9 @@ package com.situjunjie.gulimall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.situjunjie.common.utils.PageUtils;
 import com.situjunjie.gulimall.product.entity.AttrGroupEntity;
+import com.situjunjie.gulimall.product.vo.AttrRelationVo;
 
+import java.util.List;
 import java.util.Map;
 
 /**

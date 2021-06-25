@@ -5,7 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.situjunjie.gulimall.product.entity.AttrEntity;
+import com.situjunjie.gulimall.product.service.AttrAttrgroupRelationService;
+import com.situjunjie.gulimall.product.service.AttrService;
 import com.situjunjie.gulimall.product.service.CategoryService;
+import com.situjunjie.gulimall.product.vo.AttrRelationVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +39,12 @@ public class AttrGroupController {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private AttrService attrService;
+
+    @Autowired
+    private AttrAttrgroupRelationService attrAttrgroupRelationService;
 
     /**
      * 列表
@@ -106,5 +116,27 @@ public class AttrGroupController {
 
         return R.ok();
     }
+
+//    this.attrGroupId + "/attr/relation"
+    /**
+     * 查询关联关系
+     */
+    @RequestMapping("/{attrGroupId}/attr/relation")
+    public R getRelation(@PathVariable("attrGroupId")Long attrGroupId){
+
+        List<AttrEntity> list = attrService.getAttrRelation(attrGroupId);
+        return R.ok().put("data",list);
+    }
+
+    /**
+     * 批量删除关联关系
+     */
+    @RequestMapping("/attr/relation/delete")
+    public R deleteRelationBatch(@RequestBody List<AttrRelationVo> vos){
+
+        attrAttrgroupRelationService.deleteRelationBatch(vos);
+        return R.ok();
+    }
+
 
 }

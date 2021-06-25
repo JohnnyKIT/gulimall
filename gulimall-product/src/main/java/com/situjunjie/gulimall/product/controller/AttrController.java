@@ -4,7 +4,17 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.situjunjie.common.constant.ProductConst;
+import com.situjunjie.gulimall.product.dao.AttrAttrgroupRelationDao;
+import com.situjunjie.gulimall.product.entity.AttrAttrgroupRelationEntity;
+import com.situjunjie.gulimall.product.service.AttrAttrgroupRelationService;
+import com.situjunjie.gulimall.product.vo.AttrRespVo;
+import com.situjunjie.gulimall.product.vo.AttrVo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,13 +41,16 @@ public class AttrController {
     @Autowired
     private AttrService attrService;
 
+    @Autowired
+    private AttrAttrgroupRelationService attrAttrgroupRelationService;
+
     /**
      * 列表
      */
-    @RequestMapping("/list")
+    @RequestMapping("/{type}/list/{categoryId}")
    // @RequiresPermissions("product:attr:list")
-    public R list(@RequestParam Map<String, Object> params){
-        PageUtils page = attrService.queryPage(params);
+    public R list(@RequestParam Map<String, Object> params,@PathVariable("categoryId")Long catId,@PathVariable("type")String type){
+        PageUtils page = attrService.queryPage(params,catId,type);
 
         return R.ok().put("page", page);
     }
@@ -49,7 +62,8 @@ public class AttrController {
     @RequestMapping("/info/{attrId}")
    // @RequiresPermissions("product:attr:info")
     public R info(@PathVariable("attrId") Long attrId){
-		AttrEntity attr = attrService.getById(attrId);
+		//AttrEntity attr = attrService.getById(attrId);
+		AttrRespVo attr = attrService.getAttrInfo(attrId);
 
         return R.ok().put("attr", attr);
     }
@@ -58,9 +72,21 @@ public class AttrController {
      * 保存
      */
     @RequestMapping("/save")
+    @Transactional
    // @RequiresPermissions("product:attr:save")
-    public R save(@RequestBody AttrEntity attr){
-		attrService.save(attr);
+    public R save(@RequestBody AttrVo attr){
+
+        AttrEntity attrEntity = new AttrEntity();
+        BeanUtils.copyProperties(attr,attrEntity);
+        attrService.save(attrEntity);
+        attr.setAttrId(attrEntity.getAttrId());
+
+        if(attr.getAttrType()== ProductConst.AttrEnum.ATTR_TYPE_BASE.getCode()) {
+            AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
+            BeanUtils.copyProperties(attr, relationEntity);
+
+            attrAttrgroupRelationService.save(relationEntity);
+        }
 
         return R.ok();
     }
@@ -70,9 +96,19 @@ public class AttrController {
      */
     @RequestMapping("/update")
     //@RequiresPermissions("product:attr:update")
-    public R update(@RequestBody AttrEntity attr){
-		attrService.updateById(attr);
+    public R update(@RequestBody AttrVo attr){
+        AttrEntity attrEntity = new AttrEntity();
+        BeanUtils.copyProperties(attr,attrEntity);
+		attrService.updateById(attrEntity);
 
+        attr.setAttrId(attrEntity.getAttrId());
+
+        if(attr.getAttrType()== ProductConst.AttrEnum.ATTR_TYPE_BASE.getCode()) {
+            AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
+            BeanUtils.copyProperties(attr, relationEntity);
+
+            attrAttrgroupRelationService.updateById(relationEntity);
+        }
         return R.ok();
     }
 
