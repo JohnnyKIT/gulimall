@@ -3,19 +3,20 @@ package com.situjunjie.gulimall.product.controller;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.situjunjie.gulimall.product.entity.AttrAttrgroupRelationEntity;
 import com.situjunjie.gulimall.product.entity.AttrEntity;
 import com.situjunjie.gulimall.product.service.AttrAttrgroupRelationService;
 import com.situjunjie.gulimall.product.service.AttrService;
 import com.situjunjie.gulimall.product.service.CategoryService;
+import com.situjunjie.gulimall.product.vo.AttrGroupAttrsVo;
 import com.situjunjie.gulimall.product.vo.AttrRelationVo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.situjunjie.gulimall.product.entity.AttrGroupEntity;
 import com.situjunjie.gulimall.product.service.AttrGroupService;
@@ -156,6 +157,28 @@ public class AttrGroupController {
     public R relateAttrAndAttrGroup(@RequestBody List<AttrRelationVo> vos){
         attrAttrgroupRelationService.relateAttrAndAttrGroup(vos);
         return R.ok();
+    }
+
+    /**
+     * /product/attrgroup/{catelogId}/withattr
+     * 获取分类下所有分组&关联属性
+     */
+    @GetMapping("/{catelogId}/withattr")
+    public R getAttrGroupWithAttrByCatId(@PathVariable("catelogId")Long catId){
+
+        //List<AttrAttrgroupRelationEntity> relationList = attrAttrgroupRelationService.list(new QueryWrapper<AttrAttrgroupRelationEntity>().eq("catelog_id", catId));
+        List<AttrGroupEntity> attrGroupList = attrGroupService.list(new QueryWrapper<AttrGroupEntity>().eq("catelog_id", catId));
+        List<AttrGroupAttrsVo> volist = attrGroupList.stream().map(relation -> {
+            AttrGroupEntity attrGroup = attrGroupService.getById(relation.getAttrGroupId());
+            AttrGroupAttrsVo vo = new AttrGroupAttrsVo();
+            BeanUtils.copyProperties(attrGroup,vo);
+            List<AttrEntity> attrs = attrService.getAttrRelation(attrGroup.getAttrGroupId());
+            vo.setAttrs(attrs);
+            return  vo;
+        }).collect(Collectors.toList());
+
+
+        return R.ok().put("data",volist);
     }
 
 }

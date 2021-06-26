@@ -3,12 +3,15 @@ package com.situjunjie.gulimall.product.controller;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import com.situjunjie.gulimall.product.entity.BrandEntity;
 import com.situjunjie.gulimall.product.entity.CategoryEntity;
 import com.situjunjie.gulimall.product.service.BrandService;
 import com.situjunjie.gulimall.product.service.CategoryService;
+import com.situjunjie.gulimall.product.vo.BrandVo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +30,7 @@ import com.situjunjie.common.utils.R;
  * @email situjunjie@vip.qq.com
  * @date 2021-06-16 13:30:29
  */
+@Slf4j
 @RestController
 @RequestMapping("product/categorybrandrelation")
 public class CategoryBrandRelationController {
@@ -112,6 +116,27 @@ public class CategoryBrandRelationController {
 		categoryBrandRelationService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
+    }
+
+    /**
+     * /product/categorybrandrelation/brands/list
+     * 获取分类关联的品牌
+     */
+    @GetMapping("/brands/list")
+    public R getRelatedBrandList(@RequestParam(required = true,value = "catId") Long catId){
+
+        log.info("开始执行getRelatedBrandList");
+
+        List<BrandEntity> list = categoryBrandRelationService.listRelatedBrandByCateId(catId);
+
+        List<BrandVo> collect = list.stream().map(brand -> {
+            BrandVo brandVo = new BrandVo();
+            brandVo.setBrandId(brand.getBrandId());
+            brandVo.setBrandName(brand.getName());
+            return brandVo;
+        }).collect(Collectors.toList());
+
+        return R.ok().put("data",collect);
     }
 
 }
