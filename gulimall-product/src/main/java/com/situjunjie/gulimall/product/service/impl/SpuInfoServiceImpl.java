@@ -1,15 +1,18 @@
 package com.situjunjie.gulimall.product.service.impl;
 
+import com.situjunjie.common.to.SkuReductionTo;
+import com.situjunjie.common.to.SpuBoundTo;
+import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.product.entity.*;
+import com.situjunjie.gulimall.product.feign.CouponFeignService;
 import com.situjunjie.gulimall.product.service.*;
-import com.situjunjie.gulimall.product.vo.BaseAttrs;
-import com.situjunjie.gulimall.product.vo.Images;
-import com.situjunjie.gulimall.product.vo.Skus;
-import com.situjunjie.gulimall.product.vo.SpuSaveVo;
+import com.situjunjie.gulimall.product.vo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +26,9 @@ import com.situjunjie.common.utils.Query;
 
 import com.situjunjie.gulimall.product.dao.SpuInfoDao;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-
+@Slf4j
 @Service("spuInfoService")
 public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> implements SpuInfoService {
 
@@ -49,6 +53,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     @Autowired
     SkuSaleAttrValueService skuSaleAttrValueService;
 
+    @Autowired
+    CouponFeignService couponFeignService;
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<SpuInfoEntity> page = this.page(
@@ -69,13 +76,15 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         spuInfoEntity.setCreateTime(new Date());
         spuInfoEntity.setUpdateTime(new Date());
         this.save(spuInfoEntity);
+        log.info("生成的spuId={}",spuInfoEntity.getId());
 
         //2. 保存Spu描述图片信息
         SpuInfoDescEntity descEntity = new SpuInfoDescEntity();
         List<String> decript = spuInfo.getDecript();
         descEntity.setSpuId(spuInfoEntity.getId());
         descEntity.setDecript(String.join(",",decript));
-        spuInfoDescService.save(descEntity);
+        log.info("准备插入的descEntity=:{}",descEntity);
+        spuInfoDescService.getBaseMapper().insert(descEntity);
 
         //3.保存Spu 图片集
         List<String> images = spuInfo.getImages();
@@ -96,7 +105,17 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             productAttrValueService.saveBatch(collect);
 
         }
-        
+
+        //保存spu的积分属性
+        Bounds bounds = spuInfo.getBounds();
+        SpuBoundTo spuBoundTo = new SpuBoundTo();
+        BeanUtils.copyProperties(bounds,spuBoundTo);
+        spuBoundTo.setSpuId(spuInfoEntity.getId());
+        R r1 = couponFeignService.saveSpuBounds(spuBoundTo);
+        if(r1.getCode()!=0){
+            log.error("调用远程保存会员信息失败");
+        }
+
         //5. 保存sku的基本属性
         List<Skus> skus = spuInfo.getSkus();
         if(skus!=null && skus.size()>0){
@@ -124,6 +143,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     skuImagesEntity.setImgUrl(image.getImgUrl());
                     skuImagesEntity.setDefaultImg(image.getDefaultImg());
                     return skuImagesEntity;
+                }).filter(item->{
+                    return !StringUtils.isEmpty(item.getImgUrl());
                 }).collect(Collectors.toList());
                 skuImagesService.saveBatch(collect);
 
@@ -135,6 +156,17 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     return saleAttrValueEntity;
                 }).collect(Collectors.toList());
                 skuSaleAttrValueService.saveBatch(skuAttrs);
+
+                SkuReductionTo skuReductionTo = new SkuReductionTo();
+                BeanUtils.copyProperties(sku,skuReductionTo);
+                skuReductionTo.setSkuId(skuId);
+                if (skuReductionTo.getFullCount()>0||skuReductionTo.getFullPrice().compareTo(new BigDecimal("0"))==1){
+
+                R r = couponFeignService.saveSkuReduction(skuReductionTo);
+                if(r.getCode()!=0){
+                    log.error("调用远程服务保存满减信息失败");
+                }
+                }
 
 
             });
