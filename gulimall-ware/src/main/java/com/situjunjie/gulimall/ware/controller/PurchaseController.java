@@ -1,10 +1,12 @@
 package com.situjunjie.gulimall.ware.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import com.situjunjie.gulimall.ware.vo.MergeVo;
+import com.situjunjie.gulimall.ware.vo.PurchaseDoneVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,29 @@ public class PurchaseController {
     @Autowired
     private PurchaseService purchaseService;
 
+
+    /**
+     *
+     * /ware/purchase/done
+     */
+    @PostMapping("done")
+    public R purchaseDone(@RequestBody PurchaseDoneVo doneVo){
+        purchaseService.done(doneVo);
+        return R.ok();
+    }
+
+
+    /**
+     * /ware/purchase/received
+     * @param
+     * @return
+     */
+
+    @PostMapping("/received")
+    public R received(@RequestBody List<Long> ids){
+        purchaseService.received(ids);
+        return  R.ok();
+    }
 
     @PostMapping("/merge")
     public R merge(@RequestBody MergeVo mergeVo){
