@@ -23,7 +23,7 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 server:
-  port: 8000
+  port: 11010
 logging:
   level:
     com.situjunjie.gulimall.product: debug

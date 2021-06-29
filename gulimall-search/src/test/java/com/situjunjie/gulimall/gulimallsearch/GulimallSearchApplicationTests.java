@@ -5,9 +5,13 @@ import com.situjunjie.gulimall.gulimallsearch.config.GulimallElasticSearchConfig
 import lombok.Data;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +37,6 @@ public class GulimallSearchApplicationTests {
     /**
      *
      * 更新保存二合一
-     * @throws IOException
      */
     @Test
     public void indexData() throws IOException {
@@ -50,11 +53,34 @@ public class GulimallSearchApplicationTests {
 
     }
 
+    /**
+     * 测试检索功能
+     */
+    @Test
+    public void searchData() throws IOException {
+        //1创建检索请求
+        SearchRequest searchRequest = new SearchRequest();
+        //2.指定索引
+        searchRequest.indices("bank");
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchQuery("address", "mill"));
+        searchSourceBuilder.aggregation(AggregationBuilders.terms("ageAgg").field("age").size(100));
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse response = restHighLevelClient.search(searchRequest, GulimallElasticSearchConfig.COMMON_OPTIONS);
+
+        System.out.println("response=="+response);
+
+
+        //指定DSL，检索条件
+
+    }
+
     @Data
-    class User{
+    static class User{
         private String userName;
         private String gender;
         private Integer age;
     }
-
 }
