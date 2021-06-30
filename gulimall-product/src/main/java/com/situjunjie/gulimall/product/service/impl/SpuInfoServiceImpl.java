@@ -238,7 +238,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         SpuInfoEntity spuInfo = this.getById(spuId);
 
-        List<SkuInfoEntity> skuList = skuInfoService.list(new QueryWrapper<SkuInfoEntity>().eq("spuId", spuId));
+        List<SkuInfoEntity> skuList = skuInfoService.list(new QueryWrapper<SkuInfoEntity>().eq("spu_id", spuId));
 
 
         List<Long> skuIds = skuList.stream().map(item -> {

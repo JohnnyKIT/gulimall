@@ -94,7 +94,7 @@ public class SpuInfoController {
      * 商品上架
      */
     @RequestMapping("/{spuId}/up")
-    public R spuUp(@PathVariable("id") Long spuId){
+    public R spuUp(@PathVariable("spuId") Long spuId){
         spuInfoService.up(spuId);
         return  R.ok();
     }
