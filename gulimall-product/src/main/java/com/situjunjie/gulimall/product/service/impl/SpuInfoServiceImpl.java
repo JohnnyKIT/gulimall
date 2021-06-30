@@ -1,5 +1,6 @@
 package com.situjunjie.gulimall.product.service.impl;
 
+import com.situjunjie.common.constant.ProductConst;
 import com.situjunjie.common.to.SkuHasStock;
 import com.situjunjie.common.to.SkuReductionTo;
 import com.situjunjie.common.to.SpuBoundTo;
@@ -7,6 +8,7 @@ import com.situjunjie.common.to.es.SkuEsModel;
 import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.product.entity.*;
 import com.situjunjie.gulimall.product.feign.CouponFeignService;
+import com.situjunjie.gulimall.product.feign.ElasticSerachFeignService;
 import com.situjunjie.gulimall.product.feign.WareFeginService;
 import com.situjunjie.gulimall.product.service.*;
 import com.situjunjie.gulimall.product.vo.*;
@@ -67,6 +69,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     @Autowired
     WareFeginService wareFeginService;
+
+    @Autowired
+    ElasticSerachFeignService elasticSerachFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -188,6 +193,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     }
 
     @Override
+    @Transactional
     public PageUtils queryPageByCondition(Map<String, Object> params) {
         /**
          * status:
@@ -274,6 +280,20 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
             return esModel;
         }).collect(Collectors.toList());
+
+        //遍历保存至ES
+        skuEsModels.forEach(item->{
+            elasticSerachFeignService.saveSkuEsModel(item);
+        });
+
+        //更新数据库状态
+        SpuInfoEntity spuInfoEntity = new SpuInfoEntity();
+        spuInfoEntity.setId(spuId);
+        spuInfoEntity.setPublishStatus(ProductConst.StatusEnum.SPU_UP.getCode());
+        this.baseMapper.updateById(spuInfoEntity);
+
+
+
     }
 
 }

@@ -22,6 +22,7 @@ public class ElasticSearchSaveController {
             productSaveService.saveSkuEsModel(skuEsModel);
         } catch (IOException e) {
             e.printStackTrace();
+            return R.error();
         }
         return R.ok();
     }

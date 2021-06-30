@@ -10,6 +10,6 @@ import java.util.List;
 @FeignClient("gulimall-ware")
 public interface WareFeginService {
 
-    @RequestMapping("/hasStock")
+    @RequestMapping("/ware/waresku/hasStock")
     R<List<SkuHasStock>> skuHasStock(List<Long> skuIds);
 }
