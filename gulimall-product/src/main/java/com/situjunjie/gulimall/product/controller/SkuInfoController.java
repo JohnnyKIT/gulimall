@@ -31,6 +31,7 @@ public class SkuInfoController {
     @Autowired
     private SkuInfoService skuInfoService;
 
+
     /**
      * 列表
      */
@@ -86,5 +87,7 @@ public class SkuInfoController {
 
         return R.ok();
     }
+
+
 
 }

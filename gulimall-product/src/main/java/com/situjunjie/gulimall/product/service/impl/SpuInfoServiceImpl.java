@@ -2,6 +2,7 @@ package com.situjunjie.gulimall.product.service.impl;
 
 import com.situjunjie.common.to.SkuReductionTo;
 import com.situjunjie.common.to.SpuBoundTo;
+import com.situjunjie.common.to.es.SkuEsModel;
 import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.product.entity.*;
 import com.situjunjie.gulimall.product.feign.CouponFeignService;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,8 @@ import com.situjunjie.common.utils.Query;
 import com.situjunjie.gulimall.product.dao.SpuInfoDao;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import javax.jws.Oneway;
 
 @Slf4j
 @Service("spuInfoService")
@@ -55,6 +59,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     @Autowired
     CouponFeignService couponFeignService;
+
+    @Autowired
+    BrandService brandService;
+
+    @Autowired
+    CategoryService categoryService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -208,6 +218,33 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public void up(Long spuId) {
+
+        List<SkuEsModel> skuEsModels = new ArrayList<>();
+
+
+        //TODO Attr
+
+        SpuInfoEntity spuInfo = this.getById(spuId);
+
+        List<SkuInfoEntity> skuList = skuInfoService.list(new QueryWrapper<SkuInfoEntity>().eq("spuId", spuId));
+
+        List<SkuEsModel> collect = skuList.stream().map(sku -> {
+            SkuEsModel esModel = new SkuEsModel();
+            BeanUtils.copyProperties(sku, esModel);
+            esModel.setSkuPrice(sku.getPrice());
+            esModel.setSkuImg(sku.getSkuDefaultImg());
+            //TODO esModel.hasStock,hotScore
+            BrandEntity brand = brandService.getById(esModel.getBrandId());
+            esModel.setBrandImg(brand.getLogo());
+            esModel.setBrandName(brand.getName());
+            CategoryEntity catelog = categoryService.getById(sku.getCatalogId());
+            esModel.setCatalogName(catelog.getName());
+            return esModel;
+        }).collect(Collectors.toList());
     }
 
 }
