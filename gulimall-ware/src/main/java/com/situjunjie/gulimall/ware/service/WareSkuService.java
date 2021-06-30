@@ -1,9 +1,11 @@
 package com.situjunjie.gulimall.ware.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.situjunjie.common.to.SkuHasStock;
 import com.situjunjie.common.utils.PageUtils;
 import com.situjunjie.gulimall.ware.entity.WareSkuEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,5 +20,7 @@ public interface WareSkuService extends IService<WareSkuEntity> {
     PageUtils queryPage(Map<String, Object> params);
 
     PageUtils queryPageCondition(Map<String, Object> params);
+
+    List<SkuHasStock> skuHasStock(List<Long> skuIds);
 }
 

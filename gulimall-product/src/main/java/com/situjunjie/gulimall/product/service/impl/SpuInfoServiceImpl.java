@@ -1,11 +1,13 @@
 package com.situjunjie.gulimall.product.service.impl;
 
+import com.situjunjie.common.to.SkuHasStock;
 import com.situjunjie.common.to.SkuReductionTo;
 import com.situjunjie.common.to.SpuBoundTo;
 import com.situjunjie.common.to.es.SkuEsModel;
 import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.product.entity.*;
 import com.situjunjie.gulimall.product.feign.CouponFeignService;
+import com.situjunjie.gulimall.product.feign.WareFeginService;
 import com.situjunjie.gulimall.product.service.*;
 import com.situjunjie.gulimall.product.vo.*;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -65,6 +64,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     @Autowired
     CategoryService categoryService;
+
+    @Autowired
+    WareFeginService wareFeginService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -226,23 +228,50 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         List<SkuEsModel> skuEsModels = new ArrayList<>();
 
 
-        //TODO Attr
+
 
         SpuInfoEntity spuInfo = this.getById(spuId);
 
         List<SkuInfoEntity> skuList = skuInfoService.list(new QueryWrapper<SkuInfoEntity>().eq("spuId", spuId));
 
+
+        List<Long> skuIds = skuList.stream().map(item -> {
+            return item.getSkuId();
+        }).collect(Collectors.toList());
+        R<List<SkuHasStock>> r = wareFeginService.skuHasStock(skuIds);
+        Map<Long, Boolean> skuStockMap = r.getData().stream().collect(Collectors.toMap(SkuHasStock::getSkuId, item -> item.getHasStock()));
         List<SkuEsModel> collect = skuList.stream().map(sku -> {
             SkuEsModel esModel = new SkuEsModel();
             BeanUtils.copyProperties(sku, esModel);
             esModel.setSkuPrice(sku.getPrice());
             esModel.setSkuImg(sku.getSkuDefaultImg());
-            //TODO esModel.hasStock,hotScore
+            esModel.setHasStock(skuStockMap.get(sku.getSkuId()));
+
             BrandEntity brand = brandService.getById(esModel.getBrandId());
             esModel.setBrandImg(brand.getLogo());
             esModel.setBrandName(brand.getName());
             CategoryEntity catelog = categoryService.getById(sku.getCatalogId());
             esModel.setCatalogName(catelog.getName());
+
+            //热度hotsocre先置为0
+            esModel.setHotScore(0l);
+
+            //加入Attr
+            List<ProductAttrValueEntity> attrValue = productAttrValueService.getAttrValueForSpu(esModel.getSpuId());
+            List<Long> attrIds = attrValue.stream().map(item -> {
+                return item.getAttrId();
+            }).collect(Collectors.toList());
+            Set<Long> attrIdSet = new HashSet<>(attrIds);
+            List<AttrEntity> attr = attrService.listByIds(attrIdSet);
+            List<SkuEsModel.Attr> attrs = esModel.getAttrs();
+            attr.forEach(item->{
+                SkuEsModel.Attr attr1 = new SkuEsModel.Attr();
+                BeanUtils.copyProperties(item,attr1);
+                attrs.add(attr1);
+            });
+
+
+
             return esModel;
         }).collect(Collectors.toList());
     }

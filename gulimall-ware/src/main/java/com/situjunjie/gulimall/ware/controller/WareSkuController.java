@@ -1,9 +1,11 @@
 package com.situjunjie.gulimall.ware.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.situjunjie.common.to.SkuHasStock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,6 +33,18 @@ public class WareSkuController {
     @Autowired
     private WareSkuService wareSkuService;
 
+
+    /**
+     *
+     * 查找sku列表是否有库存
+     */
+    @RequestMapping("/hasStock")
+    public R<List<SkuHasStock>> skuHasStock(List<Long> skuIds){
+
+        List<SkuHasStock> list = wareSkuService.skuHasStock(skuIds);
+
+        return R.ok().setData(list);
+    }
     /**
      * 列表
      */

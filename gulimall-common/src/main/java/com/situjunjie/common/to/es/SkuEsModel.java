@@ -3,6 +3,7 @@ package com.situjunjie.common.to.es;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,7 +21,7 @@ public class SkuEsModel {
     private String brandName;
     private String brandImg;
     private String catalogName;
-    private List<Attr> attrs;
+    private List<Attr> attrs = new ArrayList<>();
 
     @Data
     public static class Attr{

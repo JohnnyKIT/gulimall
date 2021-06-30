@@ -1,7 +1,12 @@
 package com.situjunjie.gulimall.ware.service.impl;
 
+import com.situjunjie.common.to.SkuHasStock;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -51,6 +56,20 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public List<SkuHasStock> skuHasStock(List<Long> skuIds) {
+
+        List<SkuHasStock> collect = skuIds.stream().map(skuid -> {
+            SkuHasStock skuHasStock = new SkuHasStock();
+            skuHasStock.setSkuId(skuid);
+            Long stock = this.baseMapper.selectSkuStock(skuid);
+            skuHasStock.setHasStock(stock>0);
+            return skuHasStock;
+        }).collect(Collectors.toList());
+
+        return collect;
     }
 
 }
