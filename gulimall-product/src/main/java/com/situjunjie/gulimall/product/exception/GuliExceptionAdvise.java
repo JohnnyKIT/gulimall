@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-@RestControllerAdvice(basePackages = {"com.situjunjie.gulimall.product.controller"})
+//@RestControllerAdvice(basePackages = {"com.situjunjie.gulimall.product.controller"})
 @Slf4j
 public class GuliExceptionAdvise{
 

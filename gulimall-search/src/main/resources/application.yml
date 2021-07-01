@@ -7,3 +7,7 @@ spring:
     name: gulimall-search
 server:
   port: 11089
+
+logging:
+  level:
+    com.situjunjie.gulimall.gulimallsearch: debug

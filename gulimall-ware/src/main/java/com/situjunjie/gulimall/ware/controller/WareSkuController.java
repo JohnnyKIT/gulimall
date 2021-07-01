@@ -39,7 +39,7 @@ public class WareSkuController {
      * 查找sku列表是否有库存
      */
     @RequestMapping("/hasStock")
-    public R<List<SkuHasStock>> skuHasStock(List<Long> skuIds){
+    public R skuHasStock(@RequestBody List<Long> skuIds){
 
         List<SkuHasStock> list = wareSkuService.skuHasStock(skuIds);
 
