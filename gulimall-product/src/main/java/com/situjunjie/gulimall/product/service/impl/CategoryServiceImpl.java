@@ -62,13 +62,18 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     public List<CategoryEntity> getFirstLevelCategory() {
         return this.list(new QueryWrapper<CategoryEntity>().eq("parent_cid",0));
     }
+    
+    
 
     @Override
     public Map<String, List<Category2Vo>> getCategoryLevel2() {
+        //性能优化  查分类表全表一次
+        List<CategoryEntity> allCategories = this.list(null);
+
         //0.先生成Map准备保存数据
         Map<String, List<Category2Vo>> map = new HashMap<>();
         //1.获取到所有level2的entity
-        List<CategoryEntity> level2Entities = this.list(new QueryWrapper<CategoryEntity>().eq("cat_level", 2));
+        List<CategoryEntity> level2Entities = getAlllevel2Category(allCategories,2);
         //映射生成了level2的vo
         List<Category2Vo> collect = level2Entities.stream().map(level2 -> {
             Category2Vo level2vo = new Category2Vo(level2.getParentCid().toString(), level2.getCatId().toString(), level2.getName(), null);
@@ -80,7 +85,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         //映射生成level3vo
         collect.forEach(level2->{
             //查出level3的entity集合
-            List<CategoryEntity> level3entities = list(new QueryWrapper<CategoryEntity>().eq("parent_cid", level2.getId()));
+            //List<CategoryEntity> level3entities = list(new QueryWrapper<CategoryEntity>().eq("parent_cid", level2.getId()));
+            List<CategoryEntity> level3entities = allCategories.stream().filter(item -> {
+                return item.getParentCid() == Long.parseLong(level2.getId());
+            }).collect(Collectors.toList());
             //level3的entity map 转换为 level3vo
             List<Category2Vo.Category3Vo> collect3 = level3entities.stream().map(level3entity -> {
                 Category2Vo.Category3Vo level3vo = new Category2Vo.Category3Vo(level2.getId(), level3entity.getCatId().toString(), level3entity.getName());
@@ -92,6 +100,16 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         
 
         return map;
+    }
+
+    /*
+    返回指定分类的实体
+     */
+    private List<CategoryEntity> getAlllevel2Category(List<CategoryEntity> allCategories,Integer categoryLevel) {
+        List<CategoryEntity> collect = allCategories.stream().filter(item -> {
+            return item.getCatLevel() == categoryLevel;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
     private void findCatelogPath(Long catelogId, ArrayList<Long> list) {
