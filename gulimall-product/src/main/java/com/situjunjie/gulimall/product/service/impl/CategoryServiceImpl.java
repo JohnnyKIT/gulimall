@@ -1,7 +1,11 @@
 package com.situjunjie.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.situjunjie.gulimall.product.entity.AttrGroupEntity;
 import com.situjunjie.gulimall.product.vo.Category2Vo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -16,10 +20,14 @@ import com.situjunjie.common.utils.Query;
 import com.situjunjie.gulimall.product.dao.CategoryDao;
 import com.situjunjie.gulimall.product.entity.CategoryEntity;
 import com.situjunjie.gulimall.product.service.CategoryService;
+import org.springframework.util.StringUtils;
 
 
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
+
+    @Autowired
+    StringRedisTemplate redisTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -62,11 +70,26 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     public List<CategoryEntity> getFirstLevelCategory() {
         return this.list(new QueryWrapper<CategoryEntity>().eq("parent_cid",0));
     }
-    
-    
 
     @Override
     public Map<String, List<Category2Vo>> getCategoryLevel2() {
+        String categoryJson = redisTemplate.opsForValue().get("categoryJson");
+        if(StringUtils.isEmpty(categoryJson)){
+            System.out.println("判断Redis中没数据，准备查数据库。。");
+            Map<String, List<Category2Vo>> categoryLevel2FromDb = getCategoryLevel2FromDb();
+            String s = JSON.toJSONString(categoryLevel2FromDb);
+            redisTemplate.opsForValue().set("categoryJson",s);
+            return categoryLevel2FromDb;
+        }
+        System.out.println("Redis中有数据，直接取出缓存");
+        Map<String, List<Category2Vo>> stringListMap = JSON.parseObject(categoryJson, new TypeReference<Map<String, List<Category2Vo>>>() {
+        });
+        return stringListMap;
+    }
+
+
+
+    public Map<String, List<Category2Vo>> getCategoryLevel2FromDb() {
         //性能优化  查分类表全表一次
         List<CategoryEntity> allCategories = this.list(null);
 
@@ -97,7 +120,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             level2.setCatalog3List(collect3);
             map.get(level2.getCatalog1Id()).add(level2);
         });
-        
+        System.out.println("查询了数据库...");
 
         return map;
     }

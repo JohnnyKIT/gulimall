@@ -30,6 +30,8 @@ public interface CategoryService extends IService<CategoryEntity> {
 
     List<CategoryEntity> getFirstLevelCategory();
 
+
     Map<String, List<Category2Vo>> getCategoryLevel2();
+
 }
 
