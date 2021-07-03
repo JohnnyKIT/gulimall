@@ -1,6 +1,7 @@
 package com.situjunjie.gulimall.product.service.impl;
 
 import com.situjunjie.gulimall.product.entity.AttrGroupEntity;
+import com.situjunjie.gulimall.product.vo.Category2Vo;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -55,6 +56,42 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         Collections.reverse(list);
         Long[] path = list.toArray(new Long[list.size()]);
         return path;
+    }
+
+    @Override
+    public List<CategoryEntity> getFirstLevelCategory() {
+        return this.list(new QueryWrapper<CategoryEntity>().eq("parent_cid",0));
+    }
+
+    @Override
+    public Map<String, List<Category2Vo>> getCategoryLevel2() {
+        //0.先生成Map准备保存数据
+        Map<String, List<Category2Vo>> map = new HashMap<>();
+        //1.获取到所有level2的entity
+        List<CategoryEntity> level2Entities = this.list(new QueryWrapper<CategoryEntity>().eq("cat_level", 2));
+        //映射生成了level2的vo
+        List<Category2Vo> collect = level2Entities.stream().map(level2 -> {
+            Category2Vo level2vo = new Category2Vo(level2.getParentCid().toString(), level2.getCatId().toString(), level2.getName(), null);
+            if (!map.containsKey(level2.getParentCid().toString())){
+                map.put(level2.getParentCid().toString(),new ArrayList<>());
+            }
+            return level2vo;
+        }).collect(Collectors.toList());
+        //映射生成level3vo
+        collect.forEach(level2->{
+            //查出level3的entity集合
+            List<CategoryEntity> level3entities = list(new QueryWrapper<CategoryEntity>().eq("parent_cid", level2.getId()));
+            //level3的entity map 转换为 level3vo
+            List<Category2Vo.Category3Vo> collect3 = level3entities.stream().map(level3entity -> {
+                Category2Vo.Category3Vo level3vo = new Category2Vo.Category3Vo(level2.getId(), level3entity.getCatId().toString(), level3entity.getName());
+                return level3vo;
+            }).collect(Collectors.toList());
+            level2.setCatalog3List(collect3);
+            map.get(level2.getCatalog1Id()).add(level2);
+        });
+        
+
+        return map;
     }
 
     private void findCatelogPath(Long catelogId, ArrayList<Long> list) {

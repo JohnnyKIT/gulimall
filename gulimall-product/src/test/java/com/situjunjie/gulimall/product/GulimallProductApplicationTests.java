@@ -1,20 +1,26 @@
 package com.situjunjie.gulimall.product;
 
+import com.alibaba.fastjson.JSON;
 import com.situjunjie.gulimall.product.entity.BrandEntity;
 import com.situjunjie.gulimall.product.entity.CategoryEntity;
 import com.situjunjie.gulimall.product.service.BrandService;
 import com.situjunjie.gulimall.product.service.CategoryService;
+import com.situjunjie.gulimall.product.vo.Category2Vo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @SpringBootTest
-class GulimallProductApplicationTests {
+@RunWith(SpringRunner.class)
+public class GulimallProductApplicationTests {
 
     @Autowired
     BrandService brandService;
@@ -25,7 +31,7 @@ class GulimallProductApplicationTests {
 
 
     @Test
-    void contextLoads() {
+    public void contextLoads() {
         List<BrandEntity> list = brandService.list(null);
         list.forEach(item->{
             System.out.println(item);
@@ -34,16 +40,24 @@ class GulimallProductApplicationTests {
     }
 
     @Test
-    void testTree(){
+    public void testTree(){
         List<CategoryEntity> categoryEntities = categoryService.listWithTree();
         System.out.println(categoryEntities);
     }
 
     @Test
-    void testGetCategroyPath(){
+    public void testGetCategroyPath(){
         Long[] catelogPath = categoryService.getCatelogPath(225L);
         List<Long> longs = Arrays.asList(catelogPath);
         log.info("输出路径：{}",longs);
+    }
+    
+    @Test
+    public void getAllCategoryVo(){
+        Map<String, List<Category2Vo>> categoryLevel2 = categoryService.getCategoryLevel2();
+        String s = JSON.toJSONString(categoryLevel2);
+        log.info(s);
+
     }
 
 

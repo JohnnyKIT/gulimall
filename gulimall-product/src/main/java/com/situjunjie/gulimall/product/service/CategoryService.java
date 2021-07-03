@@ -3,6 +3,7 @@ package com.situjunjie.gulimall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.situjunjie.common.utils.PageUtils;
 import com.situjunjie.gulimall.product.entity.CategoryEntity;
+import com.situjunjie.gulimall.product.vo.Category2Vo;
 
 import java.util.List;
 import java.util.Map;
@@ -26,5 +27,9 @@ public interface CategoryService extends IService<CategoryEntity> {
      * @return
      */
     Long[] getCatelogPath(Long catelogId);
+
+    List<CategoryEntity> getFirstLevelCategory();
+
+    Map<String, List<Category2Vo>> getCategoryLevel2();
 }
 
