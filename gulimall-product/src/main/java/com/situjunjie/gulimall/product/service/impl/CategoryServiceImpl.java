@@ -77,8 +77,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         if(StringUtils.isEmpty(categoryJson)){
             System.out.println("判断Redis中没数据，准备查数据库。。");
             Map<String, List<Category2Vo>> categoryLevel2FromDb = getCategoryLevel2FromDb();
-            String s = JSON.toJSONString(categoryLevel2FromDb);
-            redisTemplate.opsForValue().set("categoryJson",s);
+
             return categoryLevel2FromDb;
         }
         System.out.println("Redis中有数据，直接取出缓存");
@@ -90,9 +89,16 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
 
     public Map<String, List<Category2Vo>> getCategoryLevel2FromDb() {
+        synchronized (this){
+            //加入了本地锁，需要再判断一次缓存的数据
+            String categoryJson = redisTemplate.opsForValue().get("categoryJson");
+            if(!StringUtils.isEmpty(categoryJson)){
+                Map<String, List<Category2Vo>> stringListMap = JSON.parseObject(categoryJson, new TypeReference<Map<String, List<Category2Vo>>>() {
+                });
+                return stringListMap;
+            }
         //性能优化  查分类表全表一次
         List<CategoryEntity> allCategories = this.list(null);
-
         //0.先生成Map准备保存数据
         Map<String, List<Category2Vo>> map = new HashMap<>();
         //1.获取到所有level2的entity
@@ -121,8 +127,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             map.get(level2.getCatalog1Id()).add(level2);
         });
         System.out.println("查询了数据库...");
-
+            String s = JSON.toJSONString(map);
+            redisTemplate.opsForValue().set("categoryJson",s);
         return map;
+        }
     }
 
     /*
