@@ -37,9 +37,7 @@ public class GulimallProductApplicationTests {
     @Test
     public void contextLoads() {
         List<BrandEntity> list = brandService.list(null);
-        list.forEach(item->{
-            System.out.println(item);
-        });
+        list.forEach(System.out::println);
 
     }
 
