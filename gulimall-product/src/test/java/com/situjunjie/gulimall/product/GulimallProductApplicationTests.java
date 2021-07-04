@@ -9,6 +9,7 @@ import com.situjunjie.gulimall.product.vo.Category2Vo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -27,6 +28,9 @@ public class GulimallProductApplicationTests {
 
     @Autowired
     CategoryService categoryService;
+
+    @Autowired
+    RedissonClient redissonClient;
 
 
 
@@ -58,6 +62,15 @@ public class GulimallProductApplicationTests {
         String s = JSON.toJSONString(categoryLevel2);
         log.info(s);
 
+    }
+
+    /**
+     *
+     * 测试获取Redisson实例
+     */
+    @Test
+    public void getRedissonClient(){
+        System.out.println(redissonClient);
     }
 
 
