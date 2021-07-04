@@ -53,7 +53,7 @@ public class GulimallProductApplicationTests {
     }
     
     @Test
-    public void getAllCategoryVo(){
+    public void getAllCategoryVo() throws InterruptedException {
         Map<String, List<Category2Vo>> categoryLevel2 = categoryService.getCategoryLevel2();
         String s = JSON.toJSONString(categoryLevel2);
         log.info(s);

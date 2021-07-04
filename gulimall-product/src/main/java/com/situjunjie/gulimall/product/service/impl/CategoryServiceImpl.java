@@ -6,9 +6,12 @@ import com.situjunjie.gulimall.product.entity.AttrGroupEntity;
 import com.situjunjie.gulimall.product.vo.Category2Vo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -72,11 +75,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
 
     @Override
-    public Map<String, List<Category2Vo>> getCategoryLevel2() {
+    public Map<String, List<Category2Vo>> getCategoryLevel2() throws InterruptedException {
         String categoryJson = redisTemplate.opsForValue().get("categoryJson");
         if(StringUtils.isEmpty(categoryJson)){
             System.out.println("判断Redis中没数据，准备查数据库。。");
-            Map<String, List<Category2Vo>> categoryLevel2FromDb = getCategoryLevel2FromDb();
+            Map<String, List<Category2Vo>> categoryLevel2FromDb = getCategoryLevel2ByRedisLock();
 
             return categoryLevel2FromDb;
         }
@@ -86,10 +89,39 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return stringListMap;
     }
 
+    public Map<String, List<Category2Vo>> getCategoryLevel2ByRedisLock() throws InterruptedException {
+
+        //1.加入Redis锁，并且加入当前表示线程uuid
+        String uuid = UUID.randomUUID().toString();
+        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", uuid, 30l, TimeUnit.SECONDS);
+        // lock=true即成功上锁 可以去查数据库
+        if(lock){
+            //查数据库操作
+            Map<String, List<Category2Vo>> map = getCategoryLevel2FromDb();
+            //查完数据库后解锁,解自己的锁
+
+            String luaScript ="if redis.call(\"get\",KEYS[1]) == ARGV[1]\n" +
+                    "then\n" +
+                    "    return redis.call(\"del\",KEYS[1])\n" +
+                    "else\n" +
+                    "    return 0\n" +
+                    "end";
+            RedisScript<Long> script = new DefaultRedisScript<Long>(luaScript,Long.class);
+            Long execute = redisTemplate.execute(script, Arrays.asList("lock"), uuid);
+            return map;
+        }else{
+            Thread.sleep(300l);
+            return getCategoryLevel2ByRedisLock();
+
+        }
+
+
+    }
+
 
 
     public Map<String, List<Category2Vo>> getCategoryLevel2FromDb() {
-        synchronized (this){
+
             //加入了本地锁，需要再判断一次缓存的数据
             String categoryJson = redisTemplate.opsForValue().get("categoryJson");
             if(!StringUtils.isEmpty(categoryJson)){
@@ -130,7 +162,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             String s = JSON.toJSONString(map);
             redisTemplate.opsForValue().set("categoryJson",s);
         return map;
-        }
+
     }
 
     /*
