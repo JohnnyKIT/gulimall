@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.situjunjie.gulimall.product.entity.AttrGroupEntity;
 import com.situjunjie.gulimall.product.vo.Category2Vo;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -31,6 +33,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     StringRedisTemplate redisTemplate;
+
+    @Autowired
+    RedissonClient redissonClient;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -91,29 +96,32 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     public Map<String, List<Category2Vo>> getCategoryLevel2ByRedisLock() throws InterruptedException {
 
-        //1.加入Redis锁，并且加入当前表示线程uuid
-        String uuid = UUID.randomUUID().toString();
-        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", uuid, 30l, TimeUnit.SECONDS);
-        // lock=true即成功上锁 可以去查数据库
-        if(lock){
+        //改造使用Redisson分布式锁
+        RLock rLock = redissonClient.getLock("categoryJsonLock");
+
+        rLock.lock(30,TimeUnit.SECONDS);
+//        //1.加入Redis锁，并且加入当前表示线程uuid
+//        String uuid = UUID.randomUUID().toString();
+//        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", uuid, 30l, TimeUnit.SECONDS);
+//        // lock=true即成功上锁 可以去查数据库
+
             //查数据库操作
             Map<String, List<Category2Vo>> map = getCategoryLevel2FromDb();
             //查完数据库后解锁,解自己的锁
 
-            String luaScript ="if redis.call(\"get\",KEYS[1]) == ARGV[1]\n" +
-                    "then\n" +
-                    "    return redis.call(\"del\",KEYS[1])\n" +
-                    "else\n" +
-                    "    return 0\n" +
-                    "end";
-            RedisScript<Long> script = new DefaultRedisScript<Long>(luaScript,Long.class);
-            Long execute = redisTemplate.execute(script, Arrays.asList("lock"), uuid);
-            return map;
-        }else{
-            Thread.sleep(300l);
-            return getCategoryLevel2ByRedisLock();
+//            String luaScript ="if redis.call(\"get\",KEYS[1]) == ARGV[1]\n" +
+//                    "then\n" +
+//                    "    return redis.call(\"del\",KEYS[1])\n" +
+//                    "else\n" +
+//                    "    return 0\n" +
+//                    "end";
+//            RedisScript<Long> script = new DefaultRedisScript<Long>(luaScript,Long.class);
+//            Long execute = redisTemplate.execute(script, Arrays.asList("lock"), uuid);
 
-        }
+        rLock.unlock();
+
+            return map;
+
 
 
     }
