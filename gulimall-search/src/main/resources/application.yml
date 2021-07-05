@@ -5,8 +5,11 @@ spring:
         server-addr: 192.168.56.1:8848
   application:
     name: gulimall-search
+  thymeleaf:
+    cache: false
 server:
-  port: 11089
+  port: 12089
+
 
 logging:
   level:
