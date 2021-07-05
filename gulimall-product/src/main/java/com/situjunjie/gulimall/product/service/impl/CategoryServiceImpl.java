@@ -77,7 +77,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return path;
     }
 
-    @Cacheable({"category"})
+    @Cacheable(value = {"category"},key = "#root.method.name")
     @Override
     public List<CategoryEntity> getFirstLevelCategory() {
         System.out.println("查数据库获取一级分类");
