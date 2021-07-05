@@ -4,9 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.situjunjie.gulimall.product.entity.AttrGroupEntity;
 import com.situjunjie.gulimall.product.vo.Category2Vo;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
@@ -27,7 +30,7 @@ import com.situjunjie.gulimall.product.entity.CategoryEntity;
 import com.situjunjie.gulimall.product.service.CategoryService;
 import org.springframework.util.StringUtils;
 
-
+@Slf4j
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
 
@@ -74,8 +77,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return path;
     }
 
+    @Cacheable({"category"})
     @Override
     public List<CategoryEntity> getFirstLevelCategory() {
+        System.out.println("查数据库获取一级分类");
         return this.list(new QueryWrapper<CategoryEntity>().eq("parent_cid",0));
     }
 
