@@ -275,6 +275,11 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             attr.forEach(item->{
                 SkuEsModel.Attr attr1 = new SkuEsModel.Attr();
                 BeanUtils.copyProperties(item,attr1);
+                attrValue.forEach(value->{
+                    if (value.getAttrId().equals(item.getAttrId())){
+                        attr1.setAttrValue(value.getAttrValue());
+                    }
+                });
                 attrs.add(attr1);
             });
 
