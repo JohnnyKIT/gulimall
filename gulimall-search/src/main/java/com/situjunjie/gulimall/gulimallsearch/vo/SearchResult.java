@@ -6,6 +6,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 public class SearchResult {
     /** * 查询到的所有商品信息*/
     private List<SkuEsModel> products;
