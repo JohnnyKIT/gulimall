@@ -1,7 +1,10 @@
 package com.situjunjie.gulimall.gulimallsearch.vo;
 
+import lombok.Data;
+
 import java.util.List;
 
+@Data
 public class SearchParam {
 
     // 页面传递过来的全文匹配关键字
@@ -12,7 +15,7 @@ public class SearchParam {
     //排序条件：sort=price/salecount/hotscore_desc/asc
     private String sort;
     // 仅显示有货
-    private Integer hasStock;
+    private Integer hasStock = null;
 
     /*** 价格区间 */
     private String skuPrice;

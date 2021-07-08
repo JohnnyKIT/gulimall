@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.situjunjie.common.constant.ProductConst;
 import com.situjunjie.common.to.es.SkuEsModel;
 import com.situjunjie.gulimall.gulimallsearch.config.GulimallElasticSearchConfig;
+import com.situjunjie.gulimall.gulimallsearch.constant.EsConst;
 import com.situjunjie.gulimall.gulimallsearch.service.ProductSaveService;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.DocWriteRequest;
@@ -28,7 +29,7 @@ public class ProductSaveServiceImpl implements ProductSaveService {
     public void saveSkuEsModel(SkuEsModel skuEsModel) throws IOException {
         log.debug("saveSkuEsModel 开始");
         BulkRequest bulkRequest = new BulkRequest();
-        IndexRequest indexRequest = new IndexRequest(ProductConst.ELASTICSEARCH_INDEX_NAME);
+        IndexRequest indexRequest = new IndexRequest(EsConst.ELASTICSEARCH_INDEX_NAME);
         indexRequest.id(skuEsModel.getSkuId().toString());
         String s = JSON.toJSONString(skuEsModel);
         indexRequest.source(s, XContentType.JSON);

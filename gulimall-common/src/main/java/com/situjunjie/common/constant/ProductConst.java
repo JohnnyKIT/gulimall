@@ -2,7 +2,7 @@ package com.situjunjie.common.constant;
 
 public class ProductConst {
 
-    public static final String ELASTICSEARCH_INDEX_NAME = "product";
+
 
     public enum AttrEnum {
         ATTR_TYPE_SELL(0,"销售属性"),ATTR_TYPE_BASE(1,"基本属性");
