@@ -15,6 +15,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -30,6 +31,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -37,6 +39,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -88,6 +91,10 @@ public class MallSearchServiceImpl implements MallSearchService {
         for(SearchHit hit:hits.getHits()){
             String sourceAsString = hit.getSourceAsString();
             SkuEsModel skuEsModel = JSON.parseObject(sourceAsString, SkuEsModel.class);
+            //2.1把高亮结果封装到skuTitle
+            Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+            HighlightField skuTitle = highlightFields.get("skuTitle");
+            skuEsModel.setSkuTitle(skuTitle.getFragments()[0].string());
             products.add(skuEsModel);
         }
         //3.封装分页信息
@@ -209,6 +216,7 @@ public class MallSearchServiceImpl implements MallSearchService {
         HighlightBuilder highlightBuilder = new HighlightBuilder();
         highlightBuilder.preTags("<b>");
         highlightBuilder.postTags("</b>");
+        highlightBuilder.field("skuTitle");
         searchSourceBuilder.highlighter(highlightBuilder);
         //10.构建聚合
         //10.1.品牌聚合
