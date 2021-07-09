@@ -214,7 +214,7 @@ public class MallSearchServiceImpl implements MallSearchService {
         searchSourceBuilder.size(EsConst.SEARCH_PAGE_SIZE);
         //9.构建高亮
         HighlightBuilder highlightBuilder = new HighlightBuilder();
-        highlightBuilder.preTags("<b>");
+        highlightBuilder.preTags("<b color='red'>");
         highlightBuilder.postTags("</b>");
         highlightBuilder.field("skuTitle");
         searchSourceBuilder.highlighter(highlightBuilder);
