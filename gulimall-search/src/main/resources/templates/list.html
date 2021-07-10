@@ -1315,23 +1315,20 @@
                     <div class="filter_page">
                         <div class="page_wrap">
                             <span class="page_span1">
-                                <a href="#">
+                                <a class="page_a" th:attr="pn=${result.pageNum -1}" th:if="${result.pageNum>1}">
                                     < 上一页
                                 </a>
-                                <a href="#" style="border: 0;color:#ee2222;background: #fff">1</a>
-                                <a href="#">2</a>
-                                <a href="#">3</a>
-                                <a href="#" style="border: 0;font-size: 20px;color: #999;background: #fff">...</a>
-                                <a href="#">169</a>
-                                <a href="#">
+                                <a  class="page_a"  th:each="nav:${result.pageNavs}" th:style="${result.pageNum!=nav?'':'border: 0;color:#ee2222;background: #fff'}"  th:attr="pn=${nav}">[[${nav}]]</a>
+<!--                                <a class="page_a" th:each="nav:${result.pageNavs}" th:attr="pn=${result.pageNum}">[[${nav}]]</a>-->
+                                <a   class="page_a"  th:attr="pn=${result.pageNum +1}">
                                     下一页 >
                                 </a>
                             </span>
                             <span class="page_span2">
-                                <em>共<b>169</b>页&nbsp;&nbsp;到第</em>
-                                <input type="number" value="1">
+                                <em>共<b th:text="${result.totalPages}">169</b>页&nbsp;&nbsp;到第</em>
+                                <input type="number" value="1" id="goPageNum">
                                 <em>页</em>
-                                <a href="#">确定</a>
+                                <a  href="javascript:GoPage()">确定</a>
                             </span>
                         </div>
                     </div>
@@ -2092,6 +2089,44 @@
     function searchProductByKeyWord(){
         let keyword = $("#keywordInput").val();
         location.href = "http://search.gulimall.com/list.html?keyword="+keyword;
+        return false;
+    }
+
+    //分页点击事件
+    $(".page_a").click(function(){
+        let pn = $(this).attr("pn");
+        let href = location.href;
+        location.href = replaceParamVal(href,"pageNum",pn,false);
+        return false;
+    });
+    function replaceParamVal(url, paramName, replaceVal,forceAdd) {
+        var oUrl = url.toString();
+        var nUrl;
+        if (oUrl.indexOf(paramName) != -1) {
+            if( forceAdd && oUrl.indexOf(paramName+"="+replaceVal)==-1) {
+                if (oUrl.indexOf("?") != -1) {
+                    nUrl = oUrl + "&" + paramName + "=" + replaceVal;
+                } else {
+                    nUrl = oUrl + "?" + paramName + "=" + replaceVal;
+                }
+            } else {
+                var re = eval('/(' + paramName + '=)([^&]*)/gi');
+                nUrl = oUrl.replace(re, paramName + '=' + replaceVal);
+            }
+        } else {
+            if (oUrl.indexOf("?") != -1) {
+                nUrl = oUrl + "&" + paramName + "=" + replaceVal;
+            } else {
+                nUrl = oUrl + "?" + paramName + "=" + replaceVal;
+            }
+        }
+        return nUrl;
+    };
+
+    function GoPage(){
+        let pn = $("#goPageNum").val();
+        let url = location.href;
+        location.href = replaceParamVal(url,"pageNum",pn,false);
         return false;
     }
 </script>

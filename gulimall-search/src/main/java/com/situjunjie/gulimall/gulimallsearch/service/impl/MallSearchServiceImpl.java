@@ -86,6 +86,7 @@ public class MallSearchServiceImpl implements MallSearchService {
         searchResult.setBrands(brands);
         searchResult.setCatalogs(catalogs);
         searchResult.setAttrs(attrs);
+        searchResult.setPageNavs(pageNavs);
         //2.封装所有检索到的商品信息
         SearchHits hits = searchResponse.getHits();
         for(SearchHit hit:hits.getHits()){
@@ -109,6 +110,10 @@ public class MallSearchServiceImpl implements MallSearchService {
         Integer total = Math.toIntExact(searchResult.getTotal());
         Integer totalPages = Math.toIntExact(total % EsConst.SEARCH_PAGE_SIZE == 0 ? (searchResult.getTotal() / EsConst.SEARCH_PAGE_SIZE) : (searchResult.getTotal() / EsConst.SEARCH_PAGE_SIZE + 1));
         searchResult.setTotalPages(totalPages);
+
+        for (int i = 1; i <= totalPages ; i++) {
+            pageNavs.add(i);
+        }
 
         //4.封装聚合信息
         //4.1 封装品牌聚合
@@ -150,6 +155,8 @@ public class MallSearchServiceImpl implements MallSearchService {
             attrVo.setAttrValue(collect);
             attrs.add(attrVo);
         }
+
+
 
         return searchResult;
     }
