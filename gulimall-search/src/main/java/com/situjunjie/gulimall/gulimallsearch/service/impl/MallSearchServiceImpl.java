@@ -92,9 +92,12 @@ public class MallSearchServiceImpl implements MallSearchService {
             String sourceAsString = hit.getSourceAsString();
             SkuEsModel skuEsModel = JSON.parseObject(sourceAsString, SkuEsModel.class);
             //2.1把高亮结果封装到skuTitle
+
             Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+            if(!highlightFields.isEmpty()){
             HighlightField skuTitle = highlightFields.get("skuTitle");
             skuEsModel.setSkuTitle(skuTitle.getFragments()[0].string());
+            }
             products.add(skuEsModel);
         }
         //3.封装分页信息
@@ -214,7 +217,7 @@ public class MallSearchServiceImpl implements MallSearchService {
         searchSourceBuilder.size(EsConst.SEARCH_PAGE_SIZE);
         //9.构建高亮
         HighlightBuilder highlightBuilder = new HighlightBuilder();
-        highlightBuilder.preTags("<b color='red'>");
+        highlightBuilder.preTags("<b style='color:red'>");
         highlightBuilder.postTags("</b>");
         highlightBuilder.field("skuTitle");
         searchSourceBuilder.highlighter(highlightBuilder);
