@@ -1263,8 +1263,9 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#">
-                                        <i></i>
+                                    <a href="#" th:with="p = ${!#strings.isEmpty(param.hasStock)}">
+
+                                        <input type="checkbox" id="hasStockCb" th:checked="${p}">
                                         仅显示有货
                                     </a>
                                 </li>
@@ -2178,6 +2179,18 @@
         location.href = replaceParamVal(url,'skuPrice',priceFrom+'_'+priceTo,false);
         return false;
     }
+
+    $("#hasStockCb").click(function(){ //绑定点击仅显示有货
+        let url = location.href;
+
+        if(!$(this).attr('checked')){
+            location.href = replaceParamVal(url,'hasStock','1',false);
+        }else{
+            var re = eval('/(' + 'hasStock' + '=)([^&]*)/gi');
+            location.href = url.replace(re, '');
+        }
+        return false;
+    });
 </script>
 </body>
 </html>
