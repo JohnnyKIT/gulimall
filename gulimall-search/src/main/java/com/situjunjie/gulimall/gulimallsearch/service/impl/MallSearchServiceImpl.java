@@ -1,28 +1,26 @@
 package com.situjunjie.gulimall.gulimallsearch.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.situjunjie.common.constant.ProductConst;
+import com.alibaba.fastjson.TypeReference;
 import com.situjunjie.common.to.es.SkuEsModel;
+import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.gulimallsearch.config.GulimallElasticSearchConfig;
 import com.situjunjie.gulimall.gulimallsearch.constant.EsConst;
+import com.situjunjie.gulimall.gulimallsearch.feign.ProductFeignSerivce;
 import com.situjunjie.gulimall.gulimallsearch.service.MallSearchService;
+import com.situjunjie.gulimall.gulimallsearch.vo.AttrInfoResp;
 import com.situjunjie.gulimall.gulimallsearch.vo.SearchParam;
 import com.situjunjie.gulimall.gulimallsearch.vo.SearchResult;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.text.Text;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.ParsedAggregation;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.ParsedNested;
 import org.elasticsearch.search.aggregations.bucket.terms.ParsedLongTerms;
@@ -38,6 +36,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +49,9 @@ public class MallSearchServiceImpl implements MallSearchService {
 
     @Autowired
     RestHighLevelClient client;
+
+    @Autowired
+    ProductFeignSerivce productFeignSerivce;
 
     @Override
     public SearchResult search(SearchParam searchParam) {
@@ -88,6 +91,7 @@ public class MallSearchServiceImpl implements MallSearchService {
         searchResult.setCatalogs(catalogs);
         searchResult.setAttrs(attrs);
         searchResult.setPageNavs(pageNavs);
+
         //2.封装所有检索到的商品信息
         SearchHits hits = searchResponse.getHits();
         for(SearchHit hit:hits.getHits()){
@@ -157,6 +161,36 @@ public class MallSearchServiceImpl implements MallSearchService {
             attrs.add(attrVo);
         }
 
+        //5.封装面包屑导航条数据
+        if(searchParam.getAttrs()!=null && !searchParam.getAttrs().isEmpty()){
+        List<SearchResult.NavVo> navVos = searchParam.getAttrs().stream().map(attr -> {
+            SearchResult.NavVo navVo = new SearchResult.NavVo();
+            String[] s = attr.split("_");
+            R r = productFeignSerivce.getAttrInfoById(Long.parseLong(s[0]));
+            if(r.getCode()==0){
+                AttrInfoResp attrInfo = r.getData("attr", new TypeReference<AttrInfoResp>(){});
+                navVo.setName(attrInfo.getAttrName());
+            }else{
+                navVo.setName(s[0]);
+            }
+            navVo.setNavValue(s[1]);
+            //设置超链接 点击后删除该属性
+            String queryString = searchParam.get_queryString();
+            String decode = null;
+            try {
+                decode = URLEncoder.encode(attr, "UTF-8"); //处理中文URL
+
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            String replace1 = decode.replace("+", "%20");
+            String replace = queryString.replace("attrs=" + replace1, "");
+            navVo.setLink("http://search.gulimall.com/list.html?"+replace);
+
+            return navVo;
+        }).collect(Collectors.toList());
+            searchResult.setNavs(navVos);
+        }
 
 
         return searchResult;
