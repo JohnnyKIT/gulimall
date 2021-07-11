@@ -208,7 +208,7 @@ public class MallSearchServiceImpl implements MallSearchService {
         if(!StringUtils.isEmpty(searchParam.getSkuPrice())){
             RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery("skuPrice");
             String[] range = searchParam.getSkuPrice().split("_");
-            if(range.length==2&&StringUtils.isEmpty(range[0])&&StringUtils.isEmpty(range[1])){
+            if(range.length==2&&!StringUtils.isEmpty(range[0])&&!StringUtils.isEmpty(range[1])){
                 rangeQueryBuilder.gte(range[0]).lte(range[1]);
             }
             if(searchParam.getSkuPrice().startsWith("_")){

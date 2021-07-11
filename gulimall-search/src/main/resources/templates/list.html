@@ -1138,7 +1138,7 @@
                 <div class="filter">
                     <!--综合排序-->
                     <div class="filter_top">
-                        <div class="filter_top_left" th:with="p = ${param.sort}">
+                        <div class="filter_top_left" th:with="p = ${param.sort},priceTo = ${#strings.substringAfter(param.skuPrice,'_')} ,priceFrom = ${#strings.substringBefore(param.skuPrice,'_')}">
 <!--                     默认       $(".sort_a").css({"color":"#333","border-color":"#CCC","background":"#FFF"});-->
 <!--                        高亮    $(ele).css({"color":"#FFF","border-color":"#e4393c","background":"#e4393c"});-->
                             <a class="sort_a" th:classappend="${p!=null && #strings.startsWith(p,'hotScore') && #strings.endsWith(p,'desc')}?'desc':'asc'" href="#" sort="hotScore"
@@ -1152,6 +1152,10 @@
                             >价格[[${(p!=null && #strings.startsWith(p,'skuPrice') && #strings.endsWith(p,'desc'))}?'↓':(${(p!=null && #strings.startsWith(p,'skuPrice') && #strings.endsWith(p,'asc'))}?'↑':'')]]</a>
                             <a class="sort_a" href="#" sort="hotScore">评论分</a>
                             <a class="sort_a" href="#" sort="hotScore">上架时间</a>
+
+                            <input type="number" id="productPriceFrom" width="30px" style="margin-left: 10px" th:value="${priceFrom}"/>-
+                            <input type="number" id="productPriceTo" width="30px"  th:value="${priceTo}" />
+                            <button onclick="searchByPrice()">搜索</button>
                         </div>
                         <div class="filter_top_right">
                             <span class="fp-text">
@@ -2165,10 +2169,14 @@
         }else{
             $(ele).text($(ele).text()+'↑');
         }
+    }
 
-
-
-
+    function searchByPrice(){ //按价格搜索
+        let priceFrom = $("#productPriceFrom").val();
+        let priceTo = $("#productPriceTo").val();
+        let url = location.href;
+        location.href = replaceParamVal(url,'skuPrice',priceFrom+'_'+priceTo,false);
+        return false;
     }
 </script>
 </body>
