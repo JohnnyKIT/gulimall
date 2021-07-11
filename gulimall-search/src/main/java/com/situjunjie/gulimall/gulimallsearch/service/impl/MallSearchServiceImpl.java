@@ -32,6 +32,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilde
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -245,6 +246,14 @@ public class MallSearchServiceImpl implements MallSearchService {
         attrIdAggs.subAggregation(AggregationBuilders.terms("attrValueAggs").field("attrs.attrValue").size(10));
         attrAggs.subAggregation(attrIdAggs);
         searchSourceBuilder.aggregation(attrAggs);
+
+        //11.构建排序
+        String sort = searchParam.getSort();
+        if(!StringUtils.isEmpty(sort)){
+            String[] s = sort.split("_");
+            searchSourceBuilder.sort(s[0],"desc".equals(s[1])? SortOrder.DESC:SortOrder.ASC);
+        }
+
         SearchRequest searchRequest = new SearchRequest(new String[]{EsConst.ELASTICSEARCH_INDEX_NAME},searchSourceBuilder);
         String dsl = searchRequest.source().toString();
         log.info("构建的检索DSL语句={}",dsl);

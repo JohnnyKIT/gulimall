@@ -1138,12 +1138,20 @@
                 <div class="filter">
                     <!--综合排序-->
                     <div class="filter_top">
-                        <div class="filter_top_left">
-                            <a href="#">综合排序</a>
-                            <a href="#">销量</a>
-                            <a href="#">价格</a>
-                            <a href="#">评论分</a>
-                            <a href="#">上架时间</a>
+                        <div class="filter_top_left" th:with="p = ${param.sort}">
+<!--                     默认       $(".sort_a").css({"color":"#333","border-color":"#CCC","background":"#FFF"});-->
+<!--                        高亮    $(ele).css({"color":"#FFF","border-color":"#e4393c","background":"#e4393c"});-->
+                            <a class="sort_a" th:classappend="${p!=null && #strings.startsWith(p,'hotScore') && #strings.endsWith(p,'desc')}?'desc':'asc'" href="#" sort="hotScore"
+                               th:attr="style=(${p==null || #strings.startsWith(p,'hotScore')}?'color:#FFF ;border-color:#e4393c ;background:#e4393c':'color:#333 ;border-color:#CCC ;background:#FFF')">
+                                综合排序[[${(p!=null && #strings.startsWith(p,'hotScore') && #strings.endsWith(p,'desc'))}?'↓':(${(p!=null && #strings.startsWith(p,'hotScore') && #strings.endsWith(p,'asc'))}?'↑':'')]]</a>
+                            <a class="sort_a" th:classappend="${p!=null && #strings.startsWith(p,'saleCount') && #strings.endsWith(p,'desc')}?'desc':'asc'" href="#" sort="saleCount"
+                               th:attr="style=(${p!=null && #strings.startsWith(p,'saleCount')}?'color:#FFF ;border-color:#e4393c; background:#e4393c':'color:#333 ;border-color:#CCC ;background:#FFF')"
+                            >销量[[${(p!=null && #strings.startsWith(p,'saleCount') && #strings.endsWith(p,'desc'))}?'↓':(${(p!=null && #strings.startsWith(p,'saleCount') && #strings.endsWith(p,'asc'))}?'↑':'')]]</a>
+                            <a class="sort_a" href="#" sort="skuPrice" th:classappend="${p!=null && #strings.startsWith(p,'skuPrice') && #strings.endsWith(p,'desc')}?'desc':'asc'"
+                               th:attr="style=(${p!=null && #strings.startsWith(p,'skuPrice')}?'color:#FFF ;border-color:#e4393c ;background:#e4393c':'color:#333; border-color:#CCC; background:#FFF')"
+                            >价格[[${(p!=null && #strings.startsWith(p,'skuPrice') && #strings.endsWith(p,'desc'))}?'↓':(${(p!=null && #strings.startsWith(p,'skuPrice') && #strings.endsWith(p,'asc'))}?'↑':'')]]</a>
+                            <a class="sort_a" href="#" sort="hotScore">评论分</a>
+                            <a class="sort_a" href="#" sort="hotScore">上架时间</a>
                         </div>
                         <div class="filter_top_right">
                             <span class="fp-text">
@@ -2128,6 +2136,39 @@
         let url = location.href;
         location.href = replaceParamVal(url,"pageNum",pn,false);
         return false;
+    }
+
+    $(".sort_a").click(function(){
+        //1.改变按钮样式
+        changeSortBtnStyle(this);
+        //2.准备属性
+        let sortField = $(this).attr("sort");
+        let rule = $(this).hasClass('desc')?'desc':'asc';
+        let url = location.href;
+        location.href = replaceParamVal(url,'sort',sortField+'_'+rule,false);
+        return false; //阻止超链接默认行为
+    });
+
+    function changeSortBtnStyle(ele){ //改变排序按钮样式
+        //1.改变颜色
+        $(".sort_a").css({"color":"#333","border-color":"#CCC","background":"#FFF"});
+        $(ele).css({"color":"#FFF","border-color":"#e4393c","background":"#e4393c"});
+
+        //2.上下箭头
+         $(".sort_a").each(function(){
+             let text = $(this).text().replace('↑','').replace('↓','');
+             $(this).text(text);
+         });
+        $(ele).toggleClass("desc");
+        if($(ele).hasClass("desc")){
+            $(ele).text($(ele).text()+'↓');
+        }else{
+            $(ele).text($(ele).text()+'↑');
+        }
+
+
+
+
     }
 </script>
 </body>
