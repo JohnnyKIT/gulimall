@@ -161,7 +161,7 @@ public class MallSearchServiceImpl implements MallSearchService {
             attrs.add(attrVo);
         }
 
-        //5.封装面包屑导航条数据
+        //5.封装属性面包屑导航条数据
         if(searchParam.getAttrs()!=null && !searchParam.getAttrs().isEmpty()){
         List<SearchResult.NavVo> navVos = searchParam.getAttrs().stream().map(attr -> {
             SearchResult.NavVo navVo = new SearchResult.NavVo();

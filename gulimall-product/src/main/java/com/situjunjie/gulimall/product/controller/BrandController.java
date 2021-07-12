@@ -2,6 +2,7 @@ package com.situjunjie.gulimall.product.controller;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -63,6 +64,18 @@ public class BrandController {
 		BrandEntity brand = brandService.getById(brandId);
 
         return R.ok().put("brand", brand);
+    }
+
+    /**
+     * 批量信息
+     */
+    @RequestMapping("/infos")
+    // @RequiresPermissions("product:brand:info")
+    public R info(List<Long> brandIds){
+
+        List<BrandEntity> brandEntities = brandService.listByIds(brandIds);
+
+        return R.ok().put("brand", brandEntities);
     }
 
     /**
