@@ -1290,12 +1290,12 @@
                                 <a href="#">关注</a>
                             </div>
                             <p class="da">
-                                <a href="#" >
+                                <a th:href="|http://item.gulimall.com/${product.skuId}.html|" >
                                     <img th:src="${product.skuImg}" class="dim">
                                 </a>
                             </p>
                             <ul class="tab_im">
-                                <li><a href="#" title="黑色">
+                                <li><a th:href="|http://item.gulimall.com/${product.skuId}.html|" title="黑色">
                                     <img th:src="${product.skuImg}"></a></li>
 
                             </ul>
@@ -1303,15 +1303,15 @@
                                 <span th:text="'¥'+${product.skuPrice}">¥5199.00</span>
                             </p>
                             <p class="tab_JE">
-                                <a href="#" th:utext="${product.skuTitle}">
+                                <a th:href="|http://item.gulimall.com/${product.skuId}.html|" th:utext="${product.skuTitle}">
                                     Apple iPhone 7 Plus (A1661) 32G 黑色 移动联通电信4G手机
                                 </a>
                                 </p>
                             <p class="tab_PI">已有<span>11万+</span>热门评价
-                                <a href="#">二手有售</a>
+                                <a th:href="|http://item.gulimall.com/${product.skuId}.html|">二手有售</a>
                             </p>
-                            <p class="tab_CP"><a href="#" title="谷粒商城Apple产品专营店">谷粒商城Apple产品...</a>
-                                <a href='#' title="联系供应商进行咨询">
+                            <p class="tab_CP"><a th:href="|http://item.gulimall.com/${product.skuId}.html|" title="谷粒商城Apple产品专营店">谷粒商城Apple产品...</a>
+                                <a th:href="|http://item.gulimall.com/${product.skuId}.html|" title="联系供应商进行咨询">
                                     <img src="/static/search/img/xcxc.png">
                                 </a>
                             </p>
