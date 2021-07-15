@@ -3,6 +3,7 @@ package com.situjunjie.gulimall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.situjunjie.common.utils.PageUtils;
 import com.situjunjie.gulimall.product.entity.ProductAttrValueEntity;
+import com.situjunjie.gulimall.product.vo.SpuItemAttrGroupVo;
 
 import java.util.List;
 import java.util.Map;
@@ -21,5 +22,7 @@ public interface ProductAttrValueService extends IService<ProductAttrValueEntity
     List<ProductAttrValueEntity> getAttrValueForSpu(Long spuId);
 
     void updateSpuAttr(Long spuId, List<ProductAttrValueEntity> list);
+
+    List<SpuItemAttrGroupVo> getAttrGroupValue(Long spuId, Long catalogId);
 }
 

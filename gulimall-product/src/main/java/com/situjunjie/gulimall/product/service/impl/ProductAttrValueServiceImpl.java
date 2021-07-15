@@ -1,5 +1,6 @@
 package com.situjunjie.gulimall.product.service.impl;
 
+import com.situjunjie.gulimall.product.vo.SpuItemAttrGroupVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,12 @@ public class ProductAttrValueServiceImpl extends ServiceImpl<ProductAttrValueDao
             return productAttrValueEntity;
         }).collect(Collectors.toList());
         this.saveBatch(collect);
+    }
+
+    @Override
+    public List<SpuItemAttrGroupVo> getAttrGroupValue(Long spuId, Long catalogId) {
+
+        return this.baseMapper.querySpuAttrGroupByCatelogAndSpu(spuId,catalogId);
     }
 
 
