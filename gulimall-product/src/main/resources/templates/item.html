@@ -595,8 +595,8 @@
 							<div class="box-attr clear" th:each="saleAttr:${item.saleAttr}">
 								<dl>
 									<dt>选择[[${saleAttr.attrName}]]</dt>
-									<dd th:each="val:${#strings.arraySplit(saleAttr.attrValues,',')}">
-										<a href="#" th:text="${val}">
+									<dd th:each="val:${saleAttr.attrValues}">
+										<a href="#" th:text="${val.attrValues}" th:attr="skuIds=${val.skuIds}" class="sku_attr_value" th:class="${#arrays.contains(#strings.listSplit(val.skuIds,','), item.info.skuId.toString())?'sku_attr_value checked':'sku_attr_value'}">
 											 摩卡金
 										</a>
 									</dd>
@@ -1268,6 +1268,16 @@
 	<script src="/static/item/js/jquery1.9.js" type="text/javascript" charset="utf-8"></script>
 	<script src="/static/item/js/js.js" type="text/javascript" charset="utf-8"></script>
 	<script type="text/javascript">
+		$(function(){
+			//回显销售属性的选中效果
+			$("a.sku_attr_value").parent().css({"border":"solid 1px #CCCCCC"});
+			$("a.sku_attr_value.checked").parent().css({"border":"solid 1px red"});
+		});
+
+		$("a.sku_attr_value").click(function(){
+
+		});
+
 	</script>
 
 </html>
