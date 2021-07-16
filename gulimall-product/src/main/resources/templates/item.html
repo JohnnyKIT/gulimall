@@ -1275,8 +1275,26 @@
 		});
 
 		$("a.sku_attr_value").click(function(){
+			var checkedSku = new Array();
+			$(this).addClass("clicked");
+			//当前选中元素的skuid集合
+			var curr = $(this).attr("skuIds").split(",");
+			checkedSku.push(curr);
+			//先移除所有同类型属性的checked，既回显的checked
+			$(this).parent().parent().find(".checked").removeClass("checked");
+			$("a.sku_attr_value.checked").each(function(){
+				checkedSku.push($(this).attr("skuIds").split(","));
+			});
 
+			//取交集 curr和checkedSku里面所有的集合
+			let skuFilters = checkedSku[0]
+			for (let i = 1; i < checkedSku.length; i++) {
+				skuFilters = $(skuFilters).filter(checkedSku[i]);
+			}
+			console.log(skuFilters[0]);
+			location.href = "http://item.gulimall.com/"+skuFilters[0]+".html";
 		});
+
 
 	</script>
 
