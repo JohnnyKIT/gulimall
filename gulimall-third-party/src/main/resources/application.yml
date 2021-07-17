@@ -7,3 +7,9 @@ spring:
     nacos:
       discovery:
         server-addr: 192.168.56.1:8848
+third-party:
+  sms:
+    host: http://dingxin.market.alicloudapi.com
+    path: /dx/sendSms
+    method: POST
+    appcode: 944eda7942984eb68f9e6bf49aa09c6c
