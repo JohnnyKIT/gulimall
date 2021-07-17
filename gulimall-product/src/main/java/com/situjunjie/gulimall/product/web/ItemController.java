@@ -9,6 +9,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.concurrent.ExecutionException;
+
 @Slf4j
 @Controller
 public class ItemController {
@@ -17,7 +19,7 @@ public class ItemController {
     SkuInfoService skuInfoService;
 
     @GetMapping("/{skuId}.html")
-    public String dispatchertToSkuPage(@PathVariable("skuId")Long skuId, Model model){
+    public String dispatchertToSkuPage(@PathVariable("skuId")Long skuId, Model model) throws ExecutionException, InterruptedException {
         log.info("准备查询商品详情数据展示");
         SkuItemVo vo = skuInfoService.querySkuItemVoInfo(skuId);
         log.info("查询到商品详情：{}",vo);

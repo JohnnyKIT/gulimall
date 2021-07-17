@@ -6,6 +6,7 @@ import com.situjunjie.gulimall.product.entity.SkuInfoEntity;
 import com.situjunjie.gulimall.product.vo.SkuItemVo;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * sku信息
@@ -20,6 +21,6 @@ public interface SkuInfoService extends IService<SkuInfoEntity> {
 
     PageUtils queryPageByCondition(Map<String, Object> params);
 
-    SkuItemVo querySkuItemVoInfo(Long skuId);
+    SkuItemVo querySkuItemVoInfo(Long skuId) throws ExecutionException, InterruptedException;
 }
 

@@ -37,3 +37,8 @@ server:
 logging:
   level:
     com.situjunjie.gulimall.product: debug
+gulimall:
+  threadpool:
+    core-pool-size: 10
+    maximum-pool-size: 100
+    keep-alive-time: 30
