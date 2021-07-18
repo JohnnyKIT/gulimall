@@ -4,7 +4,8 @@ public enum BizCodeEnum {
 
     UNKNOW_EXPTION(10000,"系统未知异常"),
     VALID_EXPTION(10001,"参数校验异常"),
-    SQL_EXPTION(10002,"SQL异常");
+    SQL_EXPTION(10002,"SQL异常"),
+    SMS_CODE_TOOFAST(10003,"获取短信验证码过于频繁");
 
     private Integer code;
     private String message;
