@@ -1,8 +1,10 @@
 package com.situjunjie.gulimall.gulimallauth.controller;
 
+import com.alibaba.fastjson.TypeReference;
 import com.situjunjie.common.constant.AuthServerConst;
 import com.situjunjie.common.exception.BizCodeEnum;
 import com.situjunjie.common.utils.R;
+import com.situjunjie.gulimall.gulimallauth.feign.MemberFeignService;
 import com.situjunjie.gulimall.gulimallauth.feign.ThirdPartyFeignService;
 import com.situjunjie.gulimall.gulimallauth.vo.UserRegistVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,10 @@ public class RegisterController {
 
     @Autowired
     StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    MemberFeignService memberFeignService;
+
     @ResponseBody
     @RequestMapping("/sendSms")
     public R sendSmsCode(@RequestParam("phoneNum")String phoneNum){
@@ -66,6 +72,7 @@ public class RegisterController {
      */
     @PostMapping("/register")
     public String userRegist(@Valid UserRegistVo vo , BindingResult bindingResult, RedirectAttributes redirectAttributes){
+        //校验表单 返回异常数据
         if(bindingResult.hasErrors()){
             Map<String, String> errors = new HashMap<>();
             bindingResult.getFieldErrors().forEach(item->{
@@ -75,7 +82,27 @@ public class RegisterController {
             redirectAttributes.addFlashAttribute("errors",errors);
             return "redirect:http://auth.gulimall.com/reg.html";
         }
-        //TODO 调用用户注册接口
-        return "redirect:/login.html";
+        //取出短信验证码并校验
+        String code = stringRedisTemplate.opsForValue().get(AuthServerConst.SMS_CODE_KEY_PREFIX + vo.getPhone()).split("_")[0];
+        if(!code.equals(vo.getSmsCode())){
+            Map<String, String> errors = new HashMap<>();
+            errors.put("smsCode","验证码不正确");
+            redirectAttributes.addFlashAttribute("errors",errors);
+            return "redirect:http://auth.gulimall.com/reg.html";
+        }
+        //校验成功删除验证码
+        stringRedisTemplate.delete(AuthServerConst.SMS_CODE_KEY_PREFIX + vo.getPhone());
+        //调用member服务进行注册
+        R r = memberFeignService.memberRegist(vo);
+        if(r.getCode()!=0){
+            //注册失败
+            Map<String, String> errors = new HashMap<>();
+            errors.put("msg",r.getData("msg",new TypeReference<String>(){}));
+            redirectAttributes.addFlashAttribute("errors",errors);
+            return "redirect:http://auth.gulimall.com/reg.html";
+        }
+
+
+        return "redirect:http://auth.gulimall.com/login.html";
     }
 }

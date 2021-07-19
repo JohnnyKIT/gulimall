@@ -4,13 +4,13 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.situjunjie.common.exception.BizCodeEnum;
+import com.situjunjie.gulimall.member.exception.UsernameExistsException;
 import com.situjunjie.gulimall.member.service.feign.CouponFeign;
+import com.situjunjie.gulimall.member.vo.MemberLoginVo;
+import com.situjunjie.gulimall.member.vo.MemberRegistVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.situjunjie.gulimall.member.entity.MemberEntity;
 import com.situjunjie.gulimall.member.service.MemberService;
@@ -102,6 +102,33 @@ public class MemberController {
     public R delete(@RequestBody Long[] ids){
 		memberService.removeByIds(Arrays.asList(ids));
 
+        return R.ok();
+    }
+
+    /**
+     * 会员注册
+     */
+    @RequestMapping("/regist")
+    public R memberRegist(@RequestBody MemberRegistVo vo){
+
+        try {
+            memberService.regist(vo);
+        } catch (UsernameExistsException e){
+            return R.error(BizCodeEnum.USERNAME_EXISTS_EXCETION.getCode(),BizCodeEnum.USERNAME_EXISTS_EXCETION.getMessage());
+        }
+        return R.ok();
+    }
+    /**
+     * 会员登录
+     */
+    @PostMapping("/login")
+    public R memberLogin(@RequestBody MemberLoginVo vo){
+
+        MemberEntity entity = memberService.memberLogin(vo);
+        if(entity==null){
+            //没获取到对象即登录失败
+            return R.error(BizCodeEnum.USERNAME_PASSWORD_INVALID_EXCEPTION.getCode(), BizCodeEnum.USERNAME_PASSWORD_INVALID_EXCEPTION.getMessage());
+        }
         return R.ok();
     }
 
