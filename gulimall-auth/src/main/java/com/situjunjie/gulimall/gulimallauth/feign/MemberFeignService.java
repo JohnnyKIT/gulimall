@@ -3,6 +3,7 @@ package com.situjunjie.gulimall.gulimallauth.feign;
 import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.gulimallauth.vo.UserLoginVo;
 import com.situjunjie.gulimall.gulimallauth.vo.UserRegistVo;
+import com.situjunjie.gulimall.gulimallauth.vo.WeiboAccessTokenVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,4 +18,6 @@ public interface MemberFeignService {
     @PostMapping("member/member/login")
      R memberLogin(@RequestBody UserLoginVo vo);
 
+    @PostMapping("member/member/weibo_login")
+    R weiboLogin(@RequestBody WeiboAccessTokenVo weiboAccessTokenVo);
 }

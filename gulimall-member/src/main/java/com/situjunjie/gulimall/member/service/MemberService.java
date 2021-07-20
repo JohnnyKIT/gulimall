@@ -6,6 +6,7 @@ import com.situjunjie.gulimall.member.entity.MemberEntity;
 import com.situjunjie.gulimall.member.exception.UsernameExistsException;
 import com.situjunjie.gulimall.member.vo.MemberLoginVo;
 import com.situjunjie.gulimall.member.vo.MemberRegistVo;
+import com.situjunjie.gulimall.member.vo.WeiboAccessTokenVo;
 
 import java.util.Map;
 
@@ -29,5 +30,7 @@ public interface MemberService extends IService<MemberEntity> {
     void checkUsernameExists(String username) throws UsernameExistsException;
 
     MemberEntity memberLogin(MemberLoginVo vo);
+
+    MemberEntity weiboLogin(WeiboAccessTokenVo weiboAccessTokenVo) throws Exception;
 }
 
