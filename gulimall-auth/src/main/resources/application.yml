@@ -14,5 +14,7 @@ spring:
   redis:
     port: 6379
     host: 192.168.56.10
+  session:
+    store-type: redis
 server:
   port: 13231

@@ -1,9 +1,11 @@
 package com.situjunjie.gulimall.gulimallauth.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.situjunjie.common.utils.HttpUtils;
 import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.gulimallauth.feign.MemberFeignService;
+import com.situjunjie.common.to.MemberEntity;
 import com.situjunjie.gulimall.gulimallauth.vo.WeiboAccessTokenVo;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +29,7 @@ public class OAuth2Controller {
      * 微博社交登录成功
      */
     @RequestMapping("/weibo/success")
-    public String weiboLoginSuccess(String code)  {
+    public String weiboLoginSuccess(String code, HttpSession session)  {
 
 
         //1.请求换取Accesscode
@@ -47,6 +50,11 @@ public class OAuth2Controller {
             if (r.getCode()!=0){
                 throw new Exception();
             }
+            MemberEntity memberInfo = r.getData("memberInfo", new TypeReference<MemberEntity>() {
+            });
+            System.out.println(memberInfo);
+            session.setAttribute("memberInfo",memberInfo);
+
         } catch (Exception e) {
             e.printStackTrace();
             return "redirect:http://auth.gulimall.com/login.html";
