@@ -2,6 +2,7 @@ package com.situjunjie.gulimall.gulimallauth.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.situjunjie.common.constant.AuthServerConst;
 import com.situjunjie.common.utils.HttpUtils;
 import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.gulimallauth.feign.MemberFeignService;
@@ -53,7 +54,7 @@ public class OAuth2Controller {
             MemberEntity memberInfo = r.getData("memberInfo", new TypeReference<MemberEntity>() {
             });
             System.out.println(memberInfo);
-            session.setAttribute("memberInfo",memberInfo);
+            session.setAttribute(AuthServerConst.LOGIN_USER_SESSION,memberInfo);
 
         } catch (Exception e) {
             e.printStackTrace();

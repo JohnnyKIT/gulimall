@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.situjunjie.common.constant.AuthServerConst;
 import com.situjunjie.common.exception.BizCodeEnum;
 import com.situjunjie.gulimall.member.exception.UsernameExistsException;
 import com.situjunjie.gulimall.member.service.feign.CouponFeign;
@@ -18,6 +19,7 @@ import com.situjunjie.gulimall.member.service.MemberService;
 import com.situjunjie.common.utils.PageUtils;
 import com.situjunjie.common.utils.R;
 
+import javax.servlet.http.HttpSession;
 
 
 /**
@@ -130,7 +132,8 @@ public class MemberController {
             //没获取到对象即登录失败
             return R.error(BizCodeEnum.USERNAME_PASSWORD_INVALID_EXCEPTION.getCode(), BizCodeEnum.USERNAME_PASSWORD_INVALID_EXCEPTION.getMessage());
         }
-        return R.ok();
+
+        return R.ok().put(AuthServerConst.LOGIN_USER_SESSION,entity);
     }
 
     /**
