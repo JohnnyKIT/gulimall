@@ -19,4 +19,10 @@ public class CartController {
         log.debug("userInfo = {}",userInfoTo);
         return "cartList";
     }
+
+    @GetMapping("/addToCard")
+    public String addToCard(){
+
+        return "success";
+    }
 }
