@@ -60,7 +60,7 @@
     </div>
     </div>
 
-    <div class="main">
+    <div th:if="${cartItem!=null}" class="main">
 
         <div class="success-wrap">
         <div class="w" id="result">
@@ -97,6 +97,10 @@
     </div>
     </div>
 
+    </div>
+    <div th:if="${cartItem==null}">
+        购物车还没有商品
+        <a href="http://gulimall.com">去购物</a>
     </div>
     </body>
     <script type="text/javascript" src="/static/cart/js/success.js"></script>

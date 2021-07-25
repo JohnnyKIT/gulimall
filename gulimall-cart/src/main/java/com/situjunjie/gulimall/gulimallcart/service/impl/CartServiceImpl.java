@@ -7,6 +7,7 @@ import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.gulimallcart.feign.ProductFeignService;
 import com.situjunjie.gulimall.gulimallcart.interceptor.CartInterceptor;
 import com.situjunjie.gulimall.gulimallcart.service.CartService;
+import com.situjunjie.gulimall.gulimallcart.vo.Cart;
 import com.situjunjie.gulimall.gulimallcart.vo.CartItem;
 import com.situjunjie.gulimall.gulimallcart.vo.SkuInfoVo;
 import com.situjunjie.gulimall.gulimallcart.vo.UserInfoTo;
@@ -79,6 +80,19 @@ public class CartServiceImpl implements CartService {
         //存入到Redis缓存
         redisOperation.put(skuId, JSON.toJSONString(cartItem));
 
+        return cartItem;
+    }
+
+    /**
+     * 根据skuId获取当前用户的购物项
+     * @param skuId
+     * @return
+     */
+    @Override
+    public CartItem getCartItemBySkuId(String skuId) {
+        BoundHashOperations<String, Object, Object> cuurentUserRedisOperation = getCuurentUserRedisOperation();
+        String str = (String) cuurentUserRedisOperation.get(skuId);
+        CartItem cartItem = JSON.parseObject(str, CartItem.class);
         return cartItem;
     }
 
