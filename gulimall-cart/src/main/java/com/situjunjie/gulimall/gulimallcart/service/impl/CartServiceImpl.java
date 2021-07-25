@@ -38,36 +38,47 @@ public class CartServiceImpl implements CartService {
     public CartItem addProductToCard(String skuId, String num) throws ExecutionException, InterruptedException {
         //获取当前操作用户信息
         BoundHashOperations<String, Object, Object> redisOperation = getCuurentUserRedisOperation();
-        CartItem cartItem = new CartItem();
-        CompletableFuture<Void> skuInfoFuture = CompletableFuture.runAsync(() -> {
-            //开启异步请求skuInfo
-            R r = productFeignService.getSkuInfo(Long.parseLong(skuId));
-            if (r.getCode() == 0) {
-                //请求成功返回, 装配cartItem
-                SkuInfoVo skuInfo = r.getData("skuInfo", new TypeReference<SkuInfoVo>() {
-                });
-                cartItem.setSkuId(Long.parseLong(skuId));
-                cartItem.setTitle(skuInfo.getSkuTitle());
-                cartItem.setImage(skuInfo.getSkuDefaultImg());
-                cartItem.setCount(Integer.parseInt(num));
-                cartItem.setPrice(skuInfo.getPrice());
-            }
-        }, executor);
+        String res = (String) redisOperation.get(skuId);
+        CartItem cartItem;
+        if(StringUtils.isEmpty(res)){
+            cartItem = new CartItem();
+            //购物车第一次添加这个商品
+            CompletableFuture<Void> skuInfoFuture = CompletableFuture.runAsync(() -> {
+                //开启异步请求skuInfo
+                R r = productFeignService.getSkuInfo(Long.parseLong(skuId));
+                if (r.getCode() == 0) {
+                    //请求成功返回, 装配cartItem
+                    SkuInfoVo skuInfo = r.getData("skuInfo", new TypeReference<SkuInfoVo>() {
+                    });
+                    cartItem.setSkuId(Long.parseLong(skuId));
+                    cartItem.setTitle(skuInfo.getSkuTitle());
+                    cartItem.setImage(skuInfo.getSkuDefaultImg());
+                    cartItem.setCount(Integer.parseInt(num));
+                    cartItem.setPrice(skuInfo.getPrice());
+                }
+            }, executor);
 
-        CompletableFuture<Void> saleAttrValueFuture = CompletableFuture.runAsync(() -> {
-            //开启异步请求销售属性，装配cartitem
-            R r = productFeignService.getSaleAttrValueAsStringList(skuId);
-            if (r.getCode() == 0) {
-                //远程调用成功取出数据
-                List<String> saleAttrValue = r.getData("saleAttrValue", new TypeReference<List<String>>() {
-                });
-                cartItem.setSkuAttr(saleAttrValue);
-            }
-        }, executor);
-        //阻塞等待异步任务全部完成
-        CompletableFuture.allOf(skuInfoFuture,saleAttrValueFuture).get();
+            CompletableFuture<Void> saleAttrValueFuture = CompletableFuture.runAsync(() -> {
+                //开启异步请求销售属性，装配cartitem
+                R r = productFeignService.getSaleAttrValueAsStringList(skuId);
+                if (r.getCode() == 0) {
+                    //远程调用成功取出数据
+                    List<String> saleAttrValue = r.getData("saleAttrValue", new TypeReference<List<String>>() {
+                    });
+                    cartItem.setSkuAttr(saleAttrValue);
+                }
+            }, executor);
+            //阻塞等待异步任务全部完成
+            CompletableFuture.allOf(skuInfoFuture,saleAttrValueFuture).get();
+
+        }else{
+            //购物车已经有过这个商品了,数量上增加即可
+            cartItem = JSON.parseObject(res, CartItem.class);
+            cartItem.setCount(cartItem.getCount()+Integer.parseInt(num));
+        }
         //存入到Redis缓存
         redisOperation.put(skuId, JSON.toJSONString(cartItem));
+
         return cartItem;
     }
 
