@@ -88,4 +88,18 @@ public class CartItem {
     public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
     }
+
+    @Override
+    public String toString() {
+        return "CartItem{" +
+                "skuId=" + skuId +
+                ", check=" + check +
+                ", title='" + title + '\'' +
+                ", image='" + image + '\'' +
+                ", skuAttr=" + skuAttr +
+                ", price=" + price +
+                ", count=" + count +
+                ", totalPrice=" + getTotalPrice() +
+                '}';
+    }
 }

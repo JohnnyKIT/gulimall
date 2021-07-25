@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -96,6 +96,80 @@ public class CartServiceImpl implements CartService {
         return cartItem;
     }
 
+    /**
+     * 获取当前用户的购物车
+     * @return
+     */
+    @Override
+    public Cart getCurrentUserCart() {
+        //1.从redis中获取当前用户的购物车
+        UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
+        Cart cart = new Cart();
+        if(StringUtils.isEmpty(userInfoTo.getUserId())){
+            //用户还没登录,获取临时购物车
+            List<CartItem> cartItems = getCartItemsByCartKey(userInfoTo.getUserKey());
+            cart.setItems(cartItems);
+            return cart;
+        }else{
+            //用户已经登录
+            List<CartItem> cartItems = getCartItemsByCartKey(userInfoTo.getUserId().toString());
+            //合并当前临时购物车商品，并清空
+            List<CartItem> tempCartItems = getCartItemsByCartKey(userInfoTo.getUserKey());
+            //合并购物项到用户购物车
+            combineCartItemList(tempCartItems, cartItems);
+            //删除临时购物车
+            redisTemplate.delete(CartConst.USER_CART_REDIS_PREFIX+userInfoTo.getUserKey());
+            //更新购物车到redis
+            BoundHashOperations<String, Object, Object> cuurentUserRedisOperation = getCuurentUserRedisOperation();
+            cartItems.forEach(item->{
+                cuurentUserRedisOperation.put(item.getSkuId().toString(),JSON.toJSONString(item));
+            });
+            cart.setItems(cartItems);
+            return cart;
+        }
+
+    }
+
+    /**
+     * 合并购物项
+     * @param source
+     * @param target
+     */
+    private void combineCartItemList(List<CartItem> source, List<CartItem> target) {
+        UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
+        BoundHashOperations<String, Object, Object> cartOps = redisTemplate.boundHashOps(CartConst.USER_CART_REDIS_PREFIX + userInfoTo.getUserId());
+        for (CartItem tempCartItem : source) {
+            if(cartOps.get(tempCartItem.getSkuId())==null){
+                //用户购物车没有这个临时购物车的购物项,则添加进去
+                target.add(tempCartItem);
+            }else{
+                //用户购物车已存在相同sku商品，则增加数量即可
+                for (CartItem cartItem : target) {
+                    if(cartItem.getSkuId().equals(tempCartItem.getSkuId())){
+                        cartItem.setCount(cartItem.getCount()+tempCartItem.getCount());
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 根据临时或用户Id获取购物车所有购物项
+     * @param Cartkey
+     * @return
+     */
+    private List<CartItem> getCartItemsByCartKey(String Cartkey) {
+
+        BoundHashOperations<String, Object, Object> hashOps = redisTemplate.boundHashOps(CartConst.USER_CART_REDIS_PREFIX + Cartkey);
+        List<Object> values = hashOps.values();
+        return values.stream().map(obj -> {
+            String json = (String) obj;
+            CartItem cartItem = JSON.parseObject(json, CartItem.class);
+            return cartItem;
+        }).collect(Collectors.toList());
+    }
+
 
     /**
      *
@@ -105,7 +179,7 @@ public class CartServiceImpl implements CartService {
     private BoundHashOperations<String, Object, Object> getCuurentUserRedisOperation() {
         UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
         String redisCartKey;
-        if(StringUtils.isEmpty(userInfoTo.getUsername())){
+        if(StringUtils.isEmpty(userInfoTo.getUserId())){
             //用户没有登录
             redisCartKey = CartConst.USER_CART_REDIS_PREFIX+userInfoTo.getUserKey();
         }else{

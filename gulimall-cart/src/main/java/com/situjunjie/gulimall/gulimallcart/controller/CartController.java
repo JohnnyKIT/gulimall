@@ -2,6 +2,7 @@ package com.situjunjie.gulimall.gulimallcart.controller;
 
 import com.situjunjie.gulimall.gulimallcart.interceptor.CartInterceptor;
 import com.situjunjie.gulimall.gulimallcart.service.CartService;
+import com.situjunjie.gulimall.gulimallcart.vo.Cart;
 import com.situjunjie.gulimall.gulimallcart.vo.CartItem;
 import com.situjunjie.gulimall.gulimallcart.vo.UserInfoTo;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +25,10 @@ public class CartController {
      * 跳转到购物车页面
      */
     @GetMapping("/cart.html")
-    public String goCartPage(){
-        UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
-        log.debug("userInfo = {}",userInfoTo);
+    public String goCartPage(Model model){
+        Cart cart = cartService.getCurrentUserCart();
+        model.addAttribute("cart",cart);
+        log.info("获取到的购物车对象={}",cart);
         return "cartList";
     }
 

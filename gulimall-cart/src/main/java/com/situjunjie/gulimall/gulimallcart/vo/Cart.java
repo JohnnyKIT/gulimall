@@ -80,5 +80,16 @@ public class Cart {
     public void setReduce(BigDecimal reduce) {
         this.reduce = reduce;
     }
+
+    @Override
+    public String toString() {
+        return "Cart{" +
+                "items=" + items +
+                ", countNum=" + getCountNum() +
+                ", countType=" + getCountType() +
+                ", totalAmount=" + getTotalAmount() +
+                ", reduce=" + getReduce() +
+                '}';
+    }
 }
 
