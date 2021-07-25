@@ -59,4 +59,14 @@ public class CartController {
         cartService.checkCartItem(skuId,checked);
         return "redirect:http://cart.gulimall.com/cart.html";
     }
+
+    /**
+     * 更改购物项的数量
+     */
+    @GetMapping("/changeItemCount")
+    public String changeItemCount(@RequestParam("skuId")String skuId,
+                                  @RequestParam("count")Integer count){
+        cartService.changeItemCount(skuId,count);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
 }

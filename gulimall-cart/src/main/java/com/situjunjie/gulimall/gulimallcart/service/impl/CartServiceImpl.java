@@ -138,13 +138,28 @@ public class CartServiceImpl implements CartService {
     @Override
     public void checkCartItem(String skuId, Integer checked) {
         BoundHashOperations<String, Object, Object> cuurentUserRedisOperation = getCuurentUserRedisOperation();
-        Object obj = cuurentUserRedisOperation.get(skuId);
-        CartItem cartItem = JSON.parseObject((String) obj, CartItem.class);
+        CartItem cartItem = getCartItem(skuId);
         if(checked==1){
             cartItem.setCheck(true);
         }else{
             cartItem.setCheck(false);
         }
+        String json = JSON.toJSONString(cartItem);
+        cuurentUserRedisOperation.put(skuId,json);
+    }
+
+    private CartItem getCartItem(String skuId) {
+        BoundHashOperations<String, Object, Object> cuurentUserRedisOperation = getCuurentUserRedisOperation();
+        Object obj = cuurentUserRedisOperation.get(skuId);
+        CartItem cartItem = JSON.parseObject((String) obj, CartItem.class);
+        return cartItem;
+    }
+
+    @Override
+    public void changeItemCount(String skuId, Integer count) {
+        BoundHashOperations<String, Object, Object> cuurentUserRedisOperation = getCuurentUserRedisOperation();
+        CartItem cartItem = getCartItem(skuId);
+        cartItem.setCount(count);
         String json = JSON.toJSONString(cartItem);
         cuurentUserRedisOperation.put(skuId,json);
     }

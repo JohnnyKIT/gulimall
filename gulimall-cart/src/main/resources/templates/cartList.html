@@ -101,10 +101,10 @@
 
                             </li>
                             <li>
-                                <p>
-                                    <span>-</span>
-                                    <span th:text="${item.count}">5</span>
-                                    <span>+</span>
+                                <p th:attr="skuId=${item.skuId}">
+                                    <span class="itemCountOpt">-</span>
+                                    <span th:text="${item.count}" class="skuCountSpan">5</span>
+                                    <span class="itemCountOpt">+</span>
                                 </p>
 
                             </li>
@@ -771,5 +771,14 @@
 			console.log("checked",checked);
 			location.href="http://cart.gulimall.com/checkItem?skuId="+skuId+"&checked="+checked;
 		})
+
+		//增加或减少购物项的数量
+		$(".itemCountOpt").click(function(){
+			let skuId = $(this).parent().attr("skuId");
+			let count = $(this).parent().find(".skuCountSpan").text();
+			console.log("skuId",skuId);
+			console.log("count",count);
+			location.href="http://cart.gulimall.com/changeItemCount?skuId="+skuId+"&count="+count;
+		});
 	</script>
 </html>

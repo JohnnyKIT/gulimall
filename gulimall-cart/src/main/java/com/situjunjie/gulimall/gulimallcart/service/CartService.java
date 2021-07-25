@@ -14,4 +14,6 @@ public interface CartService {
     Cart getCurrentUserCart();
 
     void checkCartItem(String skuId, Integer checked);
+
+    void changeItemCount(String skuId, Integer count);
 }
