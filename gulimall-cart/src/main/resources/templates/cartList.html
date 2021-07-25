@@ -110,7 +110,7 @@
                             </li>
                             <li style="font-weight:bold"><p class="zj"  th:text="'￥'+${#numbers.formatDecimal(item.totalPrice,1,2)}">￥22995.00</p></li>
                             <li>
-                                <p>删除</p>
+                                <p th:attr="skuId=${item.skuId}" class="deleteBtn">删除</p>
 
                             </li>
                         </ol>
@@ -161,7 +161,7 @@
 				</dl>
 			</div>
 			<div>
-				<button type="button">删除</button>
+				<button type="button" onclick="deleteItem()">删除</button>
 
 			</div>
 		</div>
@@ -780,5 +780,18 @@
 			console.log("count",count);
 			location.href="http://cart.gulimall.com/changeItemCount?skuId="+skuId+"&count="+count;
 		});
+
+		let skuIdtoRemove = 0;
+
+		//删除确认按钮点击删除
+		$(".deleteBtn").click(function(){
+			skuIdtoRemove = $(this).attr("skuId");
+		});
+
+		function deleteItem(){
+			location.href="http://cart.gulimall.com/deleteItem?skuId="+skuIdtoRemove;
+		}
+
+
 	</script>
 </html>

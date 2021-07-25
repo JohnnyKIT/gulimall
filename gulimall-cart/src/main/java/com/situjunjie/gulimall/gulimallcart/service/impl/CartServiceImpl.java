@@ -165,6 +165,16 @@ public class CartServiceImpl implements CartService {
     }
 
     /**
+     * 删除购物项
+     * @param skuId
+     */
+    @Override
+    public void deleteCartItem(String skuId) {
+        BoundHashOperations<String, Object, Object> operation = getCuurentUserRedisOperation();
+        operation.delete(skuId);
+    }
+
+    /**
      * 合并购物项
      * @param source
      * @param target

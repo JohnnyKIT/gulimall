@@ -69,4 +69,13 @@ public class CartController {
         cartService.changeItemCount(skuId,count);
         return "redirect:http://cart.gulimall.com/cart.html";
     }
+
+    /**
+     * 删除购物项
+     */
+    @GetMapping("/deleteItem")
+    public String deleteItem(@RequestParam("skuId")String skuId){
+        cartService.deleteCartItem(skuId);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
 }
