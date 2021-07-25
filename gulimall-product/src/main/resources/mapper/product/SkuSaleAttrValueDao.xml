@@ -37,6 +37,9 @@
             attr_name,
             t1.attr_value
     </select>
+    <select id="getSaleAttrValueAsStringList" resultType="java.lang.String">
+        select concat(attr_name,":",attr_value) as sale_attr_string from pms_sku_sale_attr_value where sku_id =#{skuId}
+    </select>
 
 
 </mapper>

@@ -1,15 +1,12 @@
 package com.situjunjie.gulimall.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.situjunjie.gulimall.product.entity.SkuSaleAttrValueEntity;
 import com.situjunjie.gulimall.product.service.SkuSaleAttrValueService;
@@ -85,6 +82,12 @@ public class SkuSaleAttrValueController {
 		skuSaleAttrValueService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
+    }
+
+    @GetMapping("/asStringList/{skuId}")
+    public R getSaleAttrValueAsStringList(@PathVariable("skuId")String skuId){
+        List<String> saleAttrValue = skuSaleAttrValueService.getSaleAttrValueAsStringList(skuId);
+        return R.ok().put("saleAttrValue",saleAttrValue);
     }
 
 }

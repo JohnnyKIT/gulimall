@@ -11,3 +11,8 @@ spring:
     store-type: redis
 server:
   port: 30000
+gulimall:
+  threadpool:
+    core-pool-size: 10
+    maximum-pool-size: 100
+    keep-alive-time: 30
