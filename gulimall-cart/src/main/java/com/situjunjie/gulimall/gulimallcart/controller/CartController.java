@@ -49,4 +49,14 @@ public class CartController {
         model.addAttribute("cartItem",cartItem);
         return "success";
     }
+
+    /**
+     * 更改购物项check状态
+     */
+    @GetMapping("/checkItem")
+    public String checkItem(@RequestParam("skuId")String skuId,
+                            @RequestParam("checked")Integer checked){
+        cartService.checkCartItem(skuId,checked);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
 }

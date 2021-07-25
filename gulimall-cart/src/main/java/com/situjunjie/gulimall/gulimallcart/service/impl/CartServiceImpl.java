@@ -131,6 +131,25 @@ public class CartServiceImpl implements CartService {
     }
 
     /**
+     * 更改购物项选中状态
+     * @param skuId
+     * @param checked
+     */
+    @Override
+    public void checkCartItem(String skuId, Integer checked) {
+        BoundHashOperations<String, Object, Object> cuurentUserRedisOperation = getCuurentUserRedisOperation();
+        Object obj = cuurentUserRedisOperation.get(skuId);
+        CartItem cartItem = JSON.parseObject((String) obj, CartItem.class);
+        if(checked==1){
+            cartItem.setCheck(true);
+        }else{
+            cartItem.setCheck(false);
+        }
+        String json = JSON.toJSONString(cartItem);
+        cuurentUserRedisOperation.put(skuId,json);
+    }
+
+    /**
      * 合并购物项
      * @param source
      * @param target
