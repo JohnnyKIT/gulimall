@@ -9,6 +9,21 @@ spring:
     host: 192.168.56.10
     virtual-host: /
     port: 5672
+    publisher-confirms: true
+    publisher-returns: true
+    template:
+      mandatory: true
+    listener:
+      simple:
+        acknowledge-mode: manual
+  application:
+    name: gulimall-order
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+  thymeleaf:
+    cache: false
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml
   global-config:
