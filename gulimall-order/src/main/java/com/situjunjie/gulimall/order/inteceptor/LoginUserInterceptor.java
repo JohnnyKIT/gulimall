@@ -20,7 +20,7 @@ public class LoginUserInterceptor implements HandlerInterceptor {
      */
 
 
-    ThreadLocal<MemberEntity> threadLocal = new InheritableThreadLocal<>();
+    public static ThreadLocal<MemberEntity> threadLocal = new InheritableThreadLocal<>();
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

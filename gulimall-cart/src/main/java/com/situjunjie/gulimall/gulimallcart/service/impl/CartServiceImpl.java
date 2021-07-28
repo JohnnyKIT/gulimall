@@ -174,6 +174,24 @@ public class CartServiceImpl implements CartService {
         operation.delete(skuId);
     }
 
+    @Override
+    public List<CartItem> getCartItemsChecked(Long id) {
+        List<CartItem> cartItems = getCartItemsByCartKey(String.valueOf(id));
+        cartItems = cartItems.stream().filter(cartItem -> {
+            return cartItem.getCheck();
+        }).map(cartItem -> {
+            //需要查询购物车最新的价格
+            R skuInfoR = productFeignService.getSkuInfo(cartItem.getSkuId());
+            if (skuInfoR.getCode() == 0) {
+                SkuInfoVo skuInfo = skuInfoR.getData("skuInfo", new TypeReference<SkuInfoVo>() {
+                });
+                cartItem.setPrice(skuInfo.getPrice());
+            }
+            return cartItem;
+        }).collect(Collectors.toList());
+        return cartItems;
+    }
+
     /**
      * 合并购物项
      * @param source
