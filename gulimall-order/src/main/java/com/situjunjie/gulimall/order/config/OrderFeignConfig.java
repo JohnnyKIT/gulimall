@@ -20,9 +20,11 @@ public class OrderFeignConfig {
             @Override
             public void apply(RequestTemplate requestTemplate) {
                 ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-                String cookie = requestAttributes.getRequest().getHeader("Cookie");
-                System.out.println("加入cookie="+cookie);
-                requestTemplate.header("Cookie",cookie);
+                if(requestAttributes!=null){
+                    String cookie = requestAttributes.getRequest().getHeader("Cookie");
+                    System.out.println("加入cookie="+cookie);
+                    requestTemplate.header("Cookie",cookie);
+                }
             }
         };
     }

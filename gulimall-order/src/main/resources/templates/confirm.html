@@ -667,7 +667,7 @@
 				<div class="yun1" th:each="orderItem:${orderConfirmVo.items}">
 					<img th:src="${orderItem.image}" class="yun"/>
 					<div class="mi">
-						<p>[[${orderItem.title}]] <span style="color: red;"> ￥ [[${#numbers.formatDecimal(orderItem.price,1,2)}]]</span> <span> x[[${orderItem.count}]] </span> <span>有货</span></p>
+						<p>[[${orderItem.title}]] <span style="color: red;"> ￥ [[${#numbers.formatDecimal(orderItem.price,1,2)}]]</span> <span> x[[${orderItem.count}]] </span> <span>[[${orderConfirmVo.skuStock[orderItem.skuId]?'有货':'无货'}]]</span></p>
 						<p>电提醒 久坐提醒 LED显示器 时间显示 防水记 <span>0.095kg</span></p>
 						<p class="tui-1"><img src="/static/order/confirm/img/i_07.png" />支持7天无理由退货</p>
 					</div>

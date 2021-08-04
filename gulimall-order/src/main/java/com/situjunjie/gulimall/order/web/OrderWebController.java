@@ -1,12 +1,13 @@
 package com.situjunjie.gulimall.order.web;
 
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.situjunjie.common.to.MemberEntity;
+import com.situjunjie.common.to.SkuHasStock;
 import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.order.feign.CartFeignService;
 import com.situjunjie.gulimall.order.feign.MemberFeignService;
+import com.situjunjie.gulimall.order.feign.WareFeignService;
 import com.situjunjie.gulimall.order.inteceptor.LoginUserInterceptor;
 import com.situjunjie.gulimall.order.service.OrderService;
 import com.situjunjie.gulimall.order.vo.MemberAddressVo;
@@ -19,12 +20,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 @Controller
 public class OrderWebController {
@@ -37,6 +38,9 @@ public class OrderWebController {
 
     @Autowired
     MemberFeignService memberFeignService;
+
+    @Autowired
+    WareFeignService wareFeignService;
 
     @Autowired
     ExecutorService executor;
@@ -56,6 +60,18 @@ public class OrderWebController {
                 //请求成功获取数据并装配
                 List<OrderItemVo> cartItems = cartItemsR.getData("cartItems", new TypeReference<List<OrderItemVo>>() {});
                 vo.setItems(cartItems);
+            }
+        },executor).thenRunAsync(()->{
+            //查询库存信息
+            List<Long> skuIds = vo.getItems().stream().map(item -> {
+                return item.getSkuId();
+            }).collect(Collectors.toList());
+            R r = wareFeignService.skuHasStock(skuIds);
+            List<SkuHasStock> skustock = r.getData(new TypeReference<List<SkuHasStock>>() {
+            });
+            if(skustock!=null){
+                Map<Long, Boolean> collect = skustock.stream().collect(Collectors.toMap(SkuHasStock::getSkuId, SkuHasStock::getHasStock));
+                vo.setSkuStock(collect);
             }
         },executor);
         CompletableFuture<Void> addressFuture = CompletableFuture.runAsync(() -> {

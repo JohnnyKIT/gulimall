@@ -25,6 +25,10 @@ public class OrderConfirmVo { // 跳转到确认页时需要携带的数据模�
     private Integer integration;
 
 
+    @Getter @Setter
+    private Map<Long,Boolean> skuStock;
+
+
 
     public Integer getCount() { // 总件数
         Integer count = 0;
