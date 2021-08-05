@@ -2,6 +2,7 @@ package com.situjunjie.gulimall.member.service.impl;
 
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -31,6 +32,14 @@ public class MemberReceiveAddressServiceImpl extends ServiceImpl<MemberReceiveAd
     @Override
     public List<MemberReceiveAddressEntity> getByMemberId(Long id) {
         return this.baseMapper.selectList(new QueryWrapper<MemberReceiveAddressEntity>().eq("member_id",id));
+    }
+
+    @Override
+    public BigDecimal calFareByAddrId(Long addrId) {
+        MemberReceiveAddressEntity addressEntity = getById(addrId);
+        String phone = addressEntity.getPhone();
+        String fare = phone.substring(phone.length() - 2, phone.length() - 1);
+        return new BigDecimal(fare);
     }
 
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.situjunjie.common.utils.PageUtils;
 import com.situjunjie.gulimall.member.entity.MemberReceiveAddressEntity;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -19,5 +20,7 @@ public interface MemberReceiveAddressService extends IService<MemberReceiveAddre
     PageUtils queryPage(Map<String, Object> params);
 
     List<MemberReceiveAddressEntity> getByMemberId(Long id);
+
+    BigDecimal calFareByAddrId(Long addrId);
 }
 

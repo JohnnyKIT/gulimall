@@ -598,7 +598,7 @@
 
 			<!--地址-->
 			<div class="top-3" th:each="address:${orderConfirmVo.memberAddressVos}">
-				<p th:text="${address.region}">家里</p><span>[[${address.name}]]  [[${address.province}]] [[${address.city}]] [[${address.region}]]  [[${address.detailAddress}]]  [[${address.phone}]]</span>
+				<p class="addressBtn" th:attr="defaultAddr=${address.defaultStatus},addrId=${address.id}" th:text="${address.region}">家里</p><span>[[${address.name}]]  [[${address.province}]] [[${address.city}]] [[${address.region}]]  [[${address.detailAddress}]]  [[${address.phone}]]</span>
 			</div>
 			<p class="p2">更多地址︾</p>
 			<div class="hh1"/></div>
@@ -716,7 +716,7 @@
 				</p>
 				<p class="qian_y">
 					<span>运费： </span>
-					<span class="rmb"> &nbsp ￥0.00</span>
+					<span class="rmb"> &nbsp ￥<span id="fareSpan"></span></span>
 				</p>
 				<p class="qian_y">
 					<span>服务费： </span>
@@ -730,8 +730,8 @@
 			</div>
 
 			<div class="yfze">
-				<p class="yfze_a"><span class="z">应付总额：</span><span class="hq">￥[[${orderConfirmVo.total}]]</span></p>
-				<p class="yfze_b">寄送至： 北京 朝阳区 三环到四环之间 朝阳北路复兴国际大厦23层麦田房产 IT-中心研发二部 收货人：赵存权 188****5052</p>
+				<p class="yfze_a"><span class="z">应付总额：</span><span class="hq">￥<span id="totalSpan">[[${orderConfirmVo.total}]]</span></span></p>
+<!--				<p class="yfze_b">寄送至： 北京 朝阳区 三环到四环之间 朝阳北路复兴国际大厦23层麦田房产 IT-中心研发二部 收货人：赵存权 188****5052</p>-->
 			</div>
 			<button class="tijiao">提交订单</button>
 		</div>
@@ -966,7 +966,32 @@
                 },function(){
                     $('.h-r-1').css('display','none')
                 })
+				$(".addressBtn").css({"border":"2px solid dimgray"});
+				$(".addressBtn[defaultAddr=1]").css({"border":"2px solid red"});
+				let addrId = $(".addressBtn[defaultAddr=1]").attr("addrId");
+				calFare(addrId);
             })
+
+			$(".addressBtn").click(function (){
+				//点击切换样式  。计算运费 和总价
+				//alert("点击切换样式");
+				$(".addressBtn").css({"border":"2px solid dimgray"});
+				$(this).css({"border":"2px solid red"});
+
+				//计算运费
+				let attrId = $(this).attr("addrId");
+				calFare(attrId)
+			});
+
+			function calFare(addrId){
+				//根据地址id计算运费和总价
+				$.get("http://gulimall.com/api/member/memberreceiveaddress/calFare/"+addrId,function(data){
+					let fare = data.fare;
+					$("#fareSpan").text(fare);
+					let total = [[${orderConfirmVo.total}]]+fare;
+					$("#totalSpan").text(total);
+				});
+			}
 
 
 		</script>

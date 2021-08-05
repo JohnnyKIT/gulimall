@@ -1,5 +1,6 @@
 package com.situjunjie.gulimall.member.controller;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +90,13 @@ public class MemberReceiveAddressController {
     public R getMemberReceiveAddress(@PathVariable("memberId") Long id){
         List<MemberReceiveAddressEntity> address = memberReceiveAddressService.getByMemberId(id);
         return R.ok().put("address",address);
+    }
+
+    @ResponseBody
+    @GetMapping("/calFare/{addrId}")
+    public R calFareByAddrId(@PathVariable("addrId") Long addrId){
+        BigDecimal fare = memberReceiveAddressService.calFareByAddrId(addrId);
+        return R.ok().put("fare",fare);
     }
 
 }
