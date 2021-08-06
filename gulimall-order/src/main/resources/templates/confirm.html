@@ -731,7 +731,7 @@
 
 			<div class="yfze">
 				<p class="yfze_a"><span class="z">应付总额：</span><span class="hq">￥<span id="totalSpan">[[${orderConfirmVo.total}]]</span></span></p>
-<!--				<p class="yfze_b">寄送至： 北京 朝阳区 三环到四环之间 朝阳北路复兴国际大厦23层麦田房产 IT-中心研发二部 收货人：赵存权 188****5052</p>-->
+				<p class="yfze_b">寄送至： <span id="addrSpan"></span> 收货人：<span id="receiverSpan"></span> <span id="receivePhoneSpan"></span></p>
 			</div>
 			<button class="tijiao">提交订单</button>
 		</div>
@@ -990,8 +990,16 @@
 					$("#fareSpan").text(fare);
 					let total = [[${orderConfirmVo.total}]]+fare;
 					$("#totalSpan").text(total);
+					let addr = data.selectedAddr.province+" "+data.selectedAddr.city+" "+data.selectedAddr.region+" "+data.selectedAddr.detailAddress;
+					let phone = data.selectedAddr.phone;
+					let name = data.selectedAddr.name;
+					console.log(addr,phone,name);
+					$("#addrSpan").text(addr);
+					$("#receiverSpan").text(name);
+					$("#receivePhoneSpan").text(phone);
 				});
 			}
+
 
 
 		</script>

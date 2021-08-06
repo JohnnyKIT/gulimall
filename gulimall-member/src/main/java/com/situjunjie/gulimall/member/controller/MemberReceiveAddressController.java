@@ -96,7 +96,8 @@ public class MemberReceiveAddressController {
     @GetMapping("/calFare/{addrId}")
     public R calFareByAddrId(@PathVariable("addrId") Long addrId){
         BigDecimal fare = memberReceiveAddressService.calFareByAddrId(addrId);
-        return R.ok().put("fare",fare);
+        MemberReceiveAddressEntity selectedAddr = memberReceiveAddressService.getById(addrId);
+        return R.ok().put("fare",fare).put("selectedAddr",selectedAddr);
     }
 
 }
