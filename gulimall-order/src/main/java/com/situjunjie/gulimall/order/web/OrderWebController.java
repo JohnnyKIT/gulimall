@@ -11,10 +11,7 @@ import com.situjunjie.gulimall.order.feign.MemberFeignService;
 import com.situjunjie.gulimall.order.feign.WareFeignService;
 import com.situjunjie.gulimall.order.inteceptor.LoginUserInterceptor;
 import com.situjunjie.gulimall.order.service.OrderService;
-import com.situjunjie.gulimall.order.vo.MemberAddressVo;
-import com.situjunjie.gulimall.order.vo.OrderConfirmVo;
-import com.situjunjie.gulimall.order.vo.OrderItemVo;
-import com.situjunjie.gulimall.order.vo.OrderSubmitVo;
+import com.situjunjie.gulimall.order.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -110,6 +107,15 @@ public class OrderWebController {
     @PostMapping("/submitOrder")
     public String submitOrder(OrderSubmitVo vo ){
         log.info("获取到的页面参数OrderSubmitVo={}",vo);
-        return null;
+        OrderSubmitResponseVo responseVo = orderService.submitOrder(vo);
+        if(responseVo.getCode()==0){
+            //成功
+            //TODO 订单确认跳转
+            return null;
+        }else{
+            //失败
+            return "redirect:http://order.gulimall.com/toTrade";
+        }
+
     }
 }

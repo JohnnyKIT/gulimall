@@ -3,6 +3,8 @@ package com.situjunjie.gulimall.order.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.situjunjie.common.utils.PageUtils;
 import com.situjunjie.gulimall.order.entity.OrderEntity;
+import com.situjunjie.gulimall.order.vo.OrderSubmitResponseVo;
+import com.situjunjie.gulimall.order.vo.OrderSubmitVo;
 
 import java.util.Map;
 
@@ -16,5 +18,7 @@ import java.util.Map;
 public interface OrderService extends IService<OrderEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    OrderSubmitResponseVo submitOrder(OrderSubmitVo vo);
 }
 
