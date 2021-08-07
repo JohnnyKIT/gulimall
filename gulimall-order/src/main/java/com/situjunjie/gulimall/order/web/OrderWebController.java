@@ -5,6 +5,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.situjunjie.common.to.MemberEntity;
 import com.situjunjie.common.to.SkuHasStock;
 import com.situjunjie.common.utils.R;
+import com.situjunjie.gulimall.order.constant.OrderConst;
 import com.situjunjie.gulimall.order.feign.CartFeignService;
 import com.situjunjie.gulimall.order.feign.MemberFeignService;
 import com.situjunjie.gulimall.order.feign.WareFeignService;
@@ -13,21 +14,27 @@ import com.situjunjie.gulimall.order.service.OrderService;
 import com.situjunjie.gulimall.order.vo.MemberAddressVo;
 import com.situjunjie.gulimall.order.vo.OrderConfirmVo;
 import com.situjunjie.gulimall.order.vo.OrderItemVo;
+import com.situjunjie.gulimall.order.vo.OrderSubmitVo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 @Controller
+@Slf4j
 public class OrderWebController {
 
     @Autowired
@@ -41,6 +48,9 @@ public class OrderWebController {
 
     @Autowired
     WareFeignService wareFeignService;
+
+    @Autowired
+    StringRedisTemplate redisTemplate;
 
     @Autowired
     ExecutorService executor;
@@ -86,8 +96,20 @@ public class OrderWebController {
         }, executor);
         CompletableFuture.allOf(cartItemsFuture,addressFuture).get();
         vo.setIntegration(memberEntity.getIntegration());
+
+        //防重令牌生成
+        String orderToken = UUID.randomUUID().toString().replace("-", "");
+        vo.setOrderToken(orderToken);
+        redisTemplate.opsForValue().set(OrderConst.USER_ORDER_TOKEN_PREFIX+memberEntity.getId(),orderToken);
+
         model.addAttribute("orderConfirmVo",vo);
 
         return "confirm";
+    }
+
+    @PostMapping("/submitOrder")
+    public String submitOrder(OrderSubmitVo vo ){
+        log.info("获取到的页面参数OrderSubmitVo={}",vo);
+        return null;
     }
 }

@@ -1,6 +1,6 @@
 package com.situjunjie.gulimall.order.vo;
 
-import lombok.Data;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,11 +12,11 @@ public class OrderConfirmVo { // 跳转到确认页时需要携带的数据模�
 
     @Getter
     @Setter
-    /** 会员收获地址列表 **/
+    /* 会员收获地址列表 **/
     private List<MemberAddressVo> memberAddressVos;
 
     @Getter @Setter
-    /** 所有选中的购物项 **/
+    /* 所有选中的购物项 **/
     private List<OrderItemVo> items;
 
     /** 发票记录 **/
@@ -27,6 +27,9 @@ public class OrderConfirmVo { // 跳转到确认页时需要携带的数据模�
 
     @Getter @Setter
     private Map<Long,Boolean> skuStock;
+
+    @Getter @Setter
+    private String orderToken;
 
 
 
