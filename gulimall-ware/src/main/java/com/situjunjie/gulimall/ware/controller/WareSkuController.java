@@ -6,12 +6,9 @@ import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import com.situjunjie.common.to.SkuHasStock;
+import com.situjunjie.gulimall.ware.vo.LockOrderStockVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.situjunjie.gulimall.ware.entity.WareSkuEntity;
 import com.situjunjie.gulimall.ware.service.WareSkuService;
@@ -98,6 +95,12 @@ public class WareSkuController {
     public R delete(@RequestBody Long[] ids){
 		wareSkuService.removeByIds(Arrays.asList(ids));
 
+        return R.ok();
+    }
+
+    @PostMapping("/lock/order")
+    public R lockStock(@RequestBody LockOrderStockVo vo){
+        //TODO 锁库存
         return R.ok();
     }
 
