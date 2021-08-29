@@ -1,17 +1,29 @@
 package com.situjunjie.gulimall.order.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.situjunjie.common.to.MemberEntity;
+import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.order.constant.OrderConst;
+import com.situjunjie.gulimall.order.entity.OrderItemEntity;
+import com.situjunjie.gulimall.order.enume.OrderStatusEnum;
+import com.situjunjie.gulimall.order.feign.CartFeignService;
+import com.situjunjie.gulimall.order.feign.MemberFeignService;
+import com.situjunjie.gulimall.order.feign.ProductFeignService;
 import com.situjunjie.gulimall.order.inteceptor.LoginUserInterceptor;
-import com.situjunjie.gulimall.order.vo.OrderSubmitResponseVo;
-import com.situjunjie.gulimall.order.vo.OrderSubmitVo;
+import com.situjunjie.gulimall.order.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -29,6 +41,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     StringRedisTemplate redisTemplate;
+
+    @Autowired
+    CartFeignService cartFeignService;
+
+    @Autowired
+    MemberFeignService memberFeignService;
+
+    @Autowired
+    ProductFeignService productFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -52,7 +73,24 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             Long execute = redisTemplate.execute(redisScript, Arrays.asList(OrderConst.USER_ORDER_TOKEN_PREFIX + memberEntity.getId()), vo.getOrderToken());
             if(execute==1l){
                 //成功校验令牌
-                //TODO 下单操作
+                //构建订单
+                OrderEntity orderEntity = buildOrder(vo);
+                //构建订单项
+                R r = cartFeignService.getCartItemsChecked(memberEntity.getId());
+                if(r.getCode()==0){
+                    List<OrderItemVo> cartItems = r.getData("cartItems", new TypeReference<List<OrderItemVo>>(){});
+                    List<OrderItemEntity> orderItems = buildOrderItems(cartItems,orderEntity);
+                }
+                //验价
+                if (vo.getPayPrice().subtract(orderEntity.getPayAmount()).abs().doubleValue()<0.01){
+                    //验价通过
+
+                }else{
+                    log.error("验价不通过");
+                    responseVo.setCode(2);
+                    return responseVo;
+                }
+
             }else{
                 //校验失败
                 responseVo.setCode(1);
@@ -62,5 +100,109 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         responseVo.setCode(1);
         return responseVo;
     }
+
+    /**
+     * 构建订单项目
+     * @param cartItems
+     * @return
+     */
+    private List<OrderItemEntity> buildOrderItems(List<OrderItemVo> cartItems,OrderEntity order) {
+        List<OrderItemEntity> collect = cartItems.stream().map(cartItem -> {
+            OrderItemEntity orderItemEntity = new OrderItemEntity();
+            orderItemEntity.setOrderId(order.getId());
+            orderItemEntity.setOrderSn(order.getOrderSn());
+            //1.构建sku数据
+            orderItemEntity.setSkuId(cartItem.getSkuId());
+            String skuAttrList = StringUtils.arrayToDelimitedString(cartItem.getSkuAttr().toArray(new String[0]), ";");
+            orderItemEntity.setSkuAttrsVals(skuAttrList);
+            orderItemEntity.setSkuPic(cartItem.getImage());
+            orderItemEntity.setSkuPrice(cartItem.getPrice());
+            orderItemEntity.setSkuQuantity(cartItem.getCount());
+            orderItemEntity.setSkuName(cartItem.getTitle());
+            //2.远程获取Spu数据并构建
+            R resp = productFeignService.getSpuInfoBySkuId(cartItem.getSkuId());
+            SpuInfoVo spuInfo = resp.getData(new TypeReference<SpuInfoVo>(){});
+            orderItemEntity.setSpuId(spuInfo.getId());
+            orderItemEntity.setCategoryId(spuInfo.getCatalogId());
+            orderItemEntity.setSpuName(spuInfo.getSpuName());
+            orderItemEntity.setSpuPic(cartItem.getImage());
+            //3.设置成长值信息
+            orderItemEntity.setGiftGrowth(cartItem.getPrice().intValue());
+            orderItemEntity.setGiftIntegration(cartItem.getPrice().intValue());
+            return orderItemEntity;
+        }).collect(Collectors.toList());
+        //根据数据库的信息再次计算总价格
+        computePrice(order,collect);
+        return collect;
+    }
+
+    /**
+     * 重新计算订单总额
+     * @param order
+     * @param orderItems
+     */
+    private void computePrice(OrderEntity order, List<OrderItemEntity> orderItems) {
+
+        BigDecimal total = new BigDecimal("0.0");
+        BigDecimal integration = new BigDecimal("0.0");
+        BigDecimal coupon = new BigDecimal("0.0");
+        BigDecimal promotion = new BigDecimal("0.0");
+        BigDecimal pay = new BigDecimal("0.0");
+        //TODO 再次计算总价后还要验价
+        for (OrderItemEntity orderItem : orderItems) {
+            total = total.add(orderItem.getSkuPrice().multiply(new BigDecimal(orderItem.getSkuQuantity())));
+            integration = integration.add(orderItem.getIntegrationAmount());
+            promotion = promotion.add(orderItem.getPromotionAmount());
+            coupon = coupon.add(orderItem.getCouponAmount());
+        }
+        pay = pay.subtract(integration).subtract(coupon).subtract(promotion);
+        order.setTotalAmount(total);
+        order.setPayAmount(pay);
+        order.setPromotionAmount(promotion);
+        order.setIntegration(integration.intValue());
+
+
+    }
+
+    /**
+     * 构建当前购物车订单
+     * @return
+     */
+    private OrderEntity buildOrder(OrderSubmitVo vo) {
+        //1.准备对象
+        OrderEntity orderEntity = new OrderEntity();
+        MemberEntity memberEntity = LoginUserInterceptor.threadLocal.get();
+        //2.装配对象
+        orderEntity.setMemberId(memberEntity.getId());
+        orderEntity.setOrderSn(IdWorker.getTimeId());
+        orderEntity.setCreateTime(new Date());
+        orderEntity.setMemberUsername(memberEntity.getUsername());
+        orderEntity.setTotalAmount(vo.getPayPrice());
+        orderEntity.setPayAmount(vo.getPayPrice());
+        R r = memberFeignService.calFareByAddrId(vo.getAddrId());
+        if(r.getCode()==0){
+            BigDecimal fare = r.getData("fare", new TypeReference<BigDecimal>(){});
+            MemberAddressVo addressVo = r.getData("selectedAddr",new TypeReference<MemberAddressVo>(){});
+            orderEntity.setFreightAmount(fare);
+            orderEntity.setReceiverName(addressVo.getName());
+            orderEntity.setReceiverPhone(addressVo.getPhone());
+            orderEntity.setReceiverPostCode(addressVo.getPostCode());
+            orderEntity.setReceiverProvince(addressVo.getProvince());
+            orderEntity.setReceiverCity(addressVo.getCity());
+            orderEntity.setReceiverRegion(addressVo.getRegion());
+            orderEntity.setReceiverDetailAddress(addressVo.getDetailAddress());
+            orderEntity.setNote(vo.getNote());
+        }
+        orderEntity.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
+        orderEntity.setAutoConfirmDay(14);
+        orderEntity.setGrowth(10);
+        orderEntity.setConfirmStatus(0);
+        orderEntity.setDeleteStatus(0);
+        //保存至数据库
+        this.baseMapper.insert(orderEntity);
+        return orderEntity;
+    }
+
+
 
 }

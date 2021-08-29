@@ -4,13 +4,10 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.situjunjie.gulimall.product.service.SkuInfoService;
 import com.situjunjie.gulimall.product.vo.SpuSaveVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.situjunjie.gulimall.product.entity.SpuInfoEntity;
 import com.situjunjie.gulimall.product.service.SpuInfoService;
@@ -31,6 +28,9 @@ import com.situjunjie.common.utils.R;
 public class SpuInfoController {
     @Autowired
     private SpuInfoService spuInfoService;
+
+    @Autowired
+    private SkuInfoService skuInfoService;
 
     /**
      * 列表
@@ -97,6 +97,18 @@ public class SpuInfoController {
     public R spuUp(@PathVariable("spuId") Long spuId){
         spuInfoService.up(spuId);
         return  R.ok();
+    }
+
+    /**
+     * 根据skuId获取对应的spu信息
+     */
+    @GetMapping("/skuId/{id}")
+    public R getSpuInfoBySkuId(@PathVariable("id") Long id){
+
+        Long spuId = skuInfoService.getById(id).getSpuId();
+        SpuInfoEntity spuInfo = spuInfoService.getById(spuId);
+
+        return R.ok().setData(spuInfo);
     }
 
 
