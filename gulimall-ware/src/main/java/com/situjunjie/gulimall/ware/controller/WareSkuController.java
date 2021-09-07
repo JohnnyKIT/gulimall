@@ -6,6 +6,7 @@ import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import com.situjunjie.common.to.SkuHasStock;
+import com.situjunjie.gulimall.ware.exception.NoStockException;
 import com.situjunjie.gulimall.ware.vo.LockOrderStockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -100,7 +101,11 @@ public class WareSkuController {
 
     @PostMapping("/lock/order")
     public R lockStock(@RequestBody LockOrderStockVo vo){
-        //TODO 锁库存
+        try{
+        wareSkuService.lockOrderStock(vo);
+        }catch (NoStockException e ){
+            return R.error(e.getMessage());
+        }
         return R.ok();
     }
 

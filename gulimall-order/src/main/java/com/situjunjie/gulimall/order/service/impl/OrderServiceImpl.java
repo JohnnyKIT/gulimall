@@ -101,10 +101,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     R resp = wareFeignService.lockStock(lockOrderStockVo);
                     if(resp.getCode()==0){
                         //调用锁库存方法成功
+                    }else{
+                        //锁库存发生错误
+                        responseVo.setCode(1);
+                        return responseVo;
                     }
                 }else{
                     log.error("验价不通过");
-                    responseVo.setCode(2);
+                    responseVo.setCode(1);
                     return responseVo;
                 }
 
@@ -189,14 +193,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         BigDecimal integration = new BigDecimal("0.0");
         BigDecimal coupon = new BigDecimal("0.0");
         BigDecimal promotion = new BigDecimal("0.0");
-        BigDecimal pay = new BigDecimal("0.0");
+        BigDecimal pay;
         for (OrderItemEntity orderItem : orderItems) {
             total = total.add(orderItem.getSkuPrice().multiply(new BigDecimal(orderItem.getSkuQuantity())));
-            integration = integration.add(orderItem.getIntegrationAmount());
-            promotion = promotion.add(orderItem.getPromotionAmount());
-            coupon = coupon.add(orderItem.getCouponAmount());
+            if(orderItem.getIntegrationAmount()!=null)
+                integration = integration.add(orderItem.getIntegrationAmount());
+            if(orderItem.getPromotionAmount()!=null)
+                promotion = promotion.add(orderItem.getPromotionAmount());
+            if(orderItem.getCouponAmount()!=null)
+                coupon = coupon.add(orderItem.getCouponAmount());
         }
-        pay = pay.subtract(integration).subtract(coupon).subtract(promotion);
+        pay = total.subtract(integration).subtract(coupon).subtract(promotion).add(order.getFreightAmount());
         order.setTotalAmount(total);
         order.setPayAmount(pay);
         order.setPromotionAmount(promotion);
@@ -240,7 +247,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderEntity.setConfirmStatus(0);
         orderEntity.setDeleteStatus(0);
         //保存至数据库
-        this.baseMapper.insert(orderEntity);
+        //this.baseMapper.insert(orderEntity);
         return orderEntity;
     }
 

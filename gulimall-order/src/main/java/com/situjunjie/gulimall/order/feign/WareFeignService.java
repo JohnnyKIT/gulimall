@@ -15,7 +15,7 @@ public interface WareFeignService {
     @RequestMapping("ware/waresku/hasStock")
      R skuHasStock(@RequestBody List<Long> skuIds);
 
-    @PostMapping("/lock/order/lock/order")
+    @PostMapping("ware/waresku/lock/order")
     R lockStock(@RequestBody LockOrderStockVo vo);
 
 

@@ -1,6 +1,10 @@
 package com.situjunjie.gulimall.ware.service.impl;
 
 import com.situjunjie.common.to.SkuHasStock;
+import com.situjunjie.gulimall.ware.exception.NoStockException;
+import com.situjunjie.gulimall.ware.vo.LockOrderStockVo;
+import com.situjunjie.gulimall.ware.vo.OrderItemVo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,11 +20,15 @@ import com.situjunjie.common.utils.Query;
 import com.situjunjie.gulimall.ware.dao.WareSkuDao;
 import com.situjunjie.gulimall.ware.entity.WareSkuEntity;
 import com.situjunjie.gulimall.ware.service.WareSkuService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 
 @Service("wareSkuService")
 public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> implements WareSkuService {
+
+    @Autowired
+    WareSkuDao wareSkuDao;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -70,6 +78,32 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         }).collect(Collectors.toList());
 
         return collect;
+    }
+
+    @Override
+    @Transactional
+    public void lockOrderStock(LockOrderStockVo vo) {
+
+        List<OrderItemVo> orderItems = vo.getItems();
+        for (OrderItemVo orderItem : orderItems) {
+            //遍历每个订单项
+            //1.判断是否有足够的库存
+            QueryWrapper<WareSkuEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq("sku_id",orderItem.getSkuId());
+            WareSkuEntity wareSku = getOne(wrapper);
+            if(wareSku.getStock()-wareSku.getStockLocked()>=orderItem.getCount()){
+                //库存充足,准备进行减库存
+                Long count = wareSkuDao.lockSkuStock(wareSku.getSkuId(), orderItem.getCount());
+                if(count<1){
+                    //扣除库存失败
+                    throw new NoStockException(wareSku.getSkuId(),orderItem.getCount(),wareSku.getStock()-wareSku.getStockLocked());
+                }
+            }else {
+                //库存不充足直接抛异常
+                throw new NoStockException(wareSku.getSkuId(),orderItem.getCount(),wareSku.getStock()-wareSku.getStockLocked());
+            }
+        }
+
     }
 
 }
