@@ -154,9 +154,10 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         WareOrderTaskDetailEntity orderTask = wareOrderTaskDetailService.getById(entity.getId());
         if(orderTask!=null){
             //库存扣减工作单详情更改
-            orderTask.setLockStatus(OrderTaskStatusEmun.Unlocked.getCode());
-            //TODO 需要排查这个状态更新上去但是没保存
-            wareOrderTaskDetailService.updateById(orderTask);
+            WareOrderTaskDetailEntity update = new WareOrderTaskDetailEntity();
+            update.setId(orderTask.getId());
+            update.setLockStatus(OrderTaskStatusEmun.Unlocked.getCode());
+            wareOrderTaskDetailService.updateById(update);
             //库存扣减数量恢复
             this.baseMapper.unLockOrderStock(entity.getSkuId(),entity.getWareId(),entity.getSkuNum());
         }

@@ -4,7 +4,10 @@ public enum OrderTaskStatusEmun {
 
     Locked(1,"已锁定"),Unlocked(2,"已解锁"),Counted(3,"已扣减");
 
+
     OrderTaskStatusEmun(int i, String message) {
+        this.code=i;
+        this.message =message;
     }
 
     public Integer getCode() {
