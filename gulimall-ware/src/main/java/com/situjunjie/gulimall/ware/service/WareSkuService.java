@@ -3,6 +3,7 @@ package com.situjunjie.gulimall.ware.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.situjunjie.common.to.SkuHasStock;
 import com.situjunjie.common.utils.PageUtils;
+import com.situjunjie.gulimall.ware.entity.WareOrderTaskDetailEntity;
 import com.situjunjie.gulimall.ware.entity.WareSkuEntity;
 import com.situjunjie.gulimall.ware.vo.LockOrderStockVo;
 
@@ -25,5 +26,7 @@ public interface WareSkuService extends IService<WareSkuEntity> {
     List<SkuHasStock> skuHasStock(List<Long> skuIds);
 
     void lockOrderStock(LockOrderStockVo vo);
+
+    void releaseStock(WareOrderTaskDetailEntity entity);
 }
 

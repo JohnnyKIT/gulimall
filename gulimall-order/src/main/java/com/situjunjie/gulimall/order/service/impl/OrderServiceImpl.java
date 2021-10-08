@@ -98,9 +98,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     saveOrder(orderEntity,orderItems);
                     //库存锁定
                     LockOrderStockVo lockOrderStockVo = buildOrderLockVo(orderItems,orderEntity);
+                    //生成库存锁定工作单
+
                     R resp = wareFeignService.lockStock(lockOrderStockVo);
                     if(resp.getCode()==0){
                         //调用锁库存方法成功
+                        responseVo.setCode(0);
+                        return responseVo;
                     }else{
                         //锁库存发生错误
                         responseVo.setCode(1);
@@ -141,7 +145,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
      * @param orderItems
      */
     private void saveOrder(OrderEntity orderEntity, List<OrderItemEntity> orderItems) {
-        save(orderEntity);
+        //save(orderEntity);
         orderItemService.saveBatch(orderItems);
     }
 
@@ -247,7 +251,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderEntity.setConfirmStatus(0);
         orderEntity.setDeleteStatus(0);
         //保存至数据库
-        //this.baseMapper.insert(orderEntity);
+        int insert = this.baseMapper.insert(orderEntity);
+        System.out.println("成功插入订单数量 = "+insert);
         return orderEntity;
     }
 

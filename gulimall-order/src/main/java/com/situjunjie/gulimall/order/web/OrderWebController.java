@@ -118,8 +118,7 @@ public class OrderWebController {
         OrderSubmitResponseVo responseVo = orderService.submitOrder(vo);
         if(responseVo.getCode()==0){
             //成功
-            //TODO 订单确认跳转
-            return null;
+            return "pay";
         }else{
             //失败
             return "redirect:http://order.gulimall.com/toTrade";
