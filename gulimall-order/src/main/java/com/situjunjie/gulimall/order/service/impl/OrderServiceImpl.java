@@ -14,6 +14,7 @@ import com.situjunjie.gulimall.order.feign.WareFeignService;
 import com.situjunjie.gulimall.order.inteceptor.LoginUserInterceptor;
 import com.situjunjie.gulimall.order.service.OrderItemService;
 import com.situjunjie.gulimall.order.vo.*;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -59,6 +60,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     WareFeignService wareFeignService;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -124,6 +128,18 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         }
         responseVo.setCode(1);
         return responseVo;
+    }
+
+    /**
+     * 过期订单关闭
+     * @param order
+     */
+    @Override
+    public void releaseOrder(OrderEntity order) {
+        OrderEntity update = new OrderEntity();
+        update.setId(order.getId());
+        update.setStatus(OrderStatusEnum.CANCLED.getCode());
+        this.updateById(update);
     }
 
     private LockOrderStockVo buildOrderLockVo(List<OrderItemEntity> orderItems, OrderEntity orderEntity) {
@@ -252,6 +268,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderEntity.setDeleteStatus(0);
         //保存至数据库
         int insert = this.baseMapper.insert(orderEntity);
+        rabbitTemplate.convertAndSend("order-event-exchange","order.create.order", orderEntity);
         System.out.println("成功插入订单数量 = "+insert);
         return orderEntity;
     }

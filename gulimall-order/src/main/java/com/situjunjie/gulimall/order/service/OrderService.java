@@ -20,5 +20,7 @@ public interface OrderService extends IService<OrderEntity> {
     PageUtils queryPage(Map<String, Object> params);
 
     OrderSubmitResponseVo submitOrder(OrderSubmitVo vo);
+
+    void releaseOrder(OrderEntity order);
 }
 
