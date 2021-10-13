@@ -108,6 +108,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     if(resp.getCode()==0){
                         //调用锁库存方法成功
                         responseVo.setCode(0);
+                        responseVo.setOrderEntity(orderEntity);
                         return responseVo;
                     }else{
                         //锁库存发生错误

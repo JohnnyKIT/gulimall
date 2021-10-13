@@ -113,11 +113,12 @@ public class OrderWebController {
     }
 
     @PostMapping("/submitOrder")
-    public String submitOrder(OrderSubmitVo vo ){
+    public String submitOrder(OrderSubmitVo vo,Model model){
         log.info("获取到的页面参数OrderSubmitVo={}",vo);
         OrderSubmitResponseVo responseVo = orderService.submitOrder(vo);
         if(responseVo.getCode()==0){
             //成功
+            model.addAttribute("responseVo",responseVo);
             return "pay";
         }else{
             //失败
