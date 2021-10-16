@@ -3,6 +3,8 @@ package com.situjunjie.gulimall.order.service.impl;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.situjunjie.common.to.MemberEntity;
+import com.situjunjie.common.to.MemberOrderReqTo;
+import com.situjunjie.common.utils.Constant;
 import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.order.constant.OrderConst;
 import com.situjunjie.gulimall.order.entity.OrderItemEntity;
@@ -21,10 +23,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -272,6 +271,32 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         rabbitTemplate.convertAndSend("order-event-exchange","order.create.order", orderEntity);
         System.out.println("成功插入订单数量 = "+insert);
         return orderEntity;
+    }
+
+    /**
+     * 查询用户订单列表页的数据
+     * @param memberOrderReqTo
+     * @return
+     */
+    @Override
+    public PageUtils queryMemberOrderPage(MemberOrderReqTo memberOrderReqTo) {
+        Map<String,Object> params = new HashMap<>();
+        //设置分页、排序参数
+        params.put(Constant.PAGE,memberOrderReqTo.getPageNum());
+        params.put(Constant.LIMIT,10);
+        params.put(Constant.ORDER,"DESC");
+        params.put(Constant.ORDER_FIELD,"id");
+
+        IPage<OrderEntity> page = this.page(
+                new Query<OrderEntity>().getPage(params),
+                new QueryWrapper<OrderEntity>().eq("member_id",memberOrderReqTo.getMemberId()));
+        //获取records遍历查出订单项并装配到order
+        List<OrderEntity> records = page.getRecords();
+        records.stream().forEach(order -> {
+            List<OrderItemEntity> list = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", order.getOrderSn()));
+            order.setItemList(list);
+        });
+        return new PageUtils(page);
     }
 
 

@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.situjunjie.common.to.MemberOrderReqTo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -85,6 +87,14 @@ public class OrderController {
 		orderService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
+    }
+
+    @RequestMapping("/getMemberOrder")
+    public R getMemberOrder(@RequestBody MemberOrderReqTo memberOrderReqTo){
+
+        orderService.list(new QueryWrapper<OrderEntity>().eq("member_id",memberOrderReqTo.getMemberId()));
+        PageUtils page = orderService.queryMemberOrderPage(memberOrderReqTo);
+        return R.ok().put("data",page);
     }
 
 }

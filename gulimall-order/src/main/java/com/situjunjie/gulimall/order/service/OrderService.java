@@ -1,6 +1,7 @@
 package com.situjunjie.gulimall.order.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.situjunjie.common.to.MemberOrderReqTo;
 import com.situjunjie.common.utils.PageUtils;
 import com.situjunjie.gulimall.order.entity.OrderEntity;
 import com.situjunjie.gulimall.order.vo.OrderSubmitResponseVo;
@@ -22,5 +23,7 @@ public interface OrderService extends IService<OrderEntity> {
     OrderSubmitResponseVo submitOrder(OrderSubmitVo vo);
 
     void releaseOrder(OrderEntity order);
+
+    PageUtils queryMemberOrderPage(MemberOrderReqTo memberOrderReqTo);
 }
 
