@@ -2,6 +2,7 @@ package com.situjunjie.gulimall.order.inteceptor;
 
 import com.situjunjie.common.to.MemberEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +25,15 @@ public class LoginUserInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+
+        String uri = request.getRequestURI();
+        AntPathMatcher antPathMatcher = new AntPathMatcher();
+        //过滤部分不需要跳转到登录页的请求
+        boolean match = antPathMatcher.match("/payed/**", uri); //支付宝异步回调
+        if (match){
+            return true;
+        }
+
 
         MemberEntity memberInfo = (MemberEntity) request.getSession().getAttribute("memberInfo");
         if(memberInfo!=null){
