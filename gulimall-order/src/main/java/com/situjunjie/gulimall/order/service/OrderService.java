@@ -6,6 +6,7 @@ import com.situjunjie.common.utils.PageUtils;
 import com.situjunjie.gulimall.order.entity.OrderEntity;
 import com.situjunjie.gulimall.order.vo.OrderSubmitResponseVo;
 import com.situjunjie.gulimall.order.vo.OrderSubmitVo;
+import com.situjunjie.gulimall.order.vo.PayAsyncVo;
 
 import java.util.Map;
 
@@ -25,5 +26,7 @@ public interface OrderService extends IService<OrderEntity> {
     void releaseOrder(OrderEntity order);
 
     PageUtils queryMemberOrderPage(MemberOrderReqTo memberOrderReqTo);
+
+    String payNotifyHandle(PayAsyncVo vo);
 }
 

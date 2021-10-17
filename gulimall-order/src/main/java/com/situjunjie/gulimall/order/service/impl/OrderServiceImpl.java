@@ -1,5 +1,6 @@
 package com.situjunjie.gulimall.order.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.situjunjie.common.to.MemberEntity;
@@ -8,6 +9,7 @@ import com.situjunjie.common.utils.Constant;
 import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimall.order.constant.OrderConst;
 import com.situjunjie.gulimall.order.entity.OrderItemEntity;
+import com.situjunjie.gulimall.order.entity.PaymentInfoEntity;
 import com.situjunjie.gulimall.order.enume.OrderStatusEnum;
 import com.situjunjie.gulimall.order.feign.CartFeignService;
 import com.situjunjie.gulimall.order.feign.MemberFeignService;
@@ -15,6 +17,7 @@ import com.situjunjie.gulimall.order.feign.ProductFeignService;
 import com.situjunjie.gulimall.order.feign.WareFeignService;
 import com.situjunjie.gulimall.order.inteceptor.LoginUserInterceptor;
 import com.situjunjie.gulimall.order.service.OrderItemService;
+import com.situjunjie.gulimall.order.service.PaymentInfoService;
 import com.situjunjie.gulimall.order.vo.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +65,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    PaymentInfoService paymentInfoService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -299,6 +305,34 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return new PageUtils(page);
     }
 
+    /**
+     * 处理支付宝支付后异步回调，验证签名成功后调用
+     * @param vo
+     * @return
+     */
+    @Override
+    public String payNotifyHandle(PayAsyncVo vo) {
+        PaymentInfoEntity paymentInfo = new PaymentInfoEntity();
+        OrderEntity order = this.getOne(new QueryWrapper<OrderEntity>().eq("order_sn", vo.getOut_trade_no()));
+        //保存交易流水信息，方便以后对账
+        paymentInfo.setOrderId(order.getId());
+        paymentInfo.setOrderSn(vo.getOut_trade_no());
+        paymentInfo.setCreateTime(new Date());
+        paymentInfo.setAlipayTradeNo(vo.getTrade_no());
+        paymentInfo.setPaymentStatus(vo.getTrade_status());
+        paymentInfo.setConfirmTime(new Date());
+        paymentInfo.setCallbackContent(JSON.toJSONString(vo));
+        paymentInfo.setSubject(vo.getSubject());
+        paymentInfoService.save(paymentInfo);
+        if(vo.getTrade_status().equals("TRADE_FINISHED")){
+            //交易成功
+            order.setStatus(OrderStatusEnum.PAYED.getCode());
+            this.save(order);
+            return "success";
+        }
+        return "error";
+
+    }
 
 
 }
