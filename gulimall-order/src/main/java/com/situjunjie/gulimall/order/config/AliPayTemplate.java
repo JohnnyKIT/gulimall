@@ -47,6 +47,9 @@ public class AliPayTemplate {
     // 支付宝网关
     public static String log_path = "C:\\";
 
+    //统一过期订单过期时间
+    public static String timeoutExpress = "2m";
+
 
     /**
      * 初始化Alipay客户端
@@ -62,10 +65,12 @@ public class AliPayTemplate {
         alipayRequest.setReturnUrl(AliPayTemplate.return_url);
         alipayRequest.setNotifyUrl(AliPayTemplate.notify_url);
 
+
         alipayRequest.setBizContent("{\"out_trade_no\":\""+ vo.getOutTradeNo() +"\","
                 + "\"total_amount\":\""+ vo.getTotal_amount() +"\","
                 + "\"subject\":\""+ vo.getSubject() +"\","
                 + "\"body\":\""+ vo.getBody() +"\","
+                + "\"timeout_express\":\""+ timeoutExpress +"\","
                 + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
 
         //若想给BizContent增加其他可选请求参数，以增加自定义超时时间参数timeout_express来举例说明
