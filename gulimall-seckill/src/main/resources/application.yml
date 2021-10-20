@@ -1,0 +1,12 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.56.1:8848
+  application:
+    name: gulimall-seckill
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+  redis:
+    host: 192.168.56.10
+    port: 6379

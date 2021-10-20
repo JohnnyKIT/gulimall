@@ -1,4 +1,3 @@
-
 spring:
   datasource:
     url: jdbc:mysql://rm-bp10io6z0flrid09vmo.mysql.rds.aliyuncs.com:3306/gulimall_sms

@@ -1,6 +1,7 @@
 package com.situjunjie.gulimall.coupon.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -85,6 +86,15 @@ public class SeckillSessionController {
 		seckillSessionService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
+    }
+
+    /**
+     * 获取最近3天的秒杀信息
+     */
+    @RequestMapping("/getSeckillSessionLast3Days")
+    public R getSeckillSessionLast3Days(){
+        List<SeckillSessionEntity> sessions = seckillSessionService.getSeckillSessionLast3Days();
+        return R.ok().setData(sessions);
     }
 
 }
