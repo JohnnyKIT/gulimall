@@ -11,6 +11,7 @@ import com.situjunjie.gulimallseckill.feign.CouponFeignService;
 import com.situjunjie.gulimallseckill.vo.SeckillSkuRedisVo;
 import com.situjunjie.gulimallseckill.vo.to.SeckillSessionInfoTo;
 import com.situjunjie.gulimallseckill.vo.to.SeckillSessionRedisVo;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -28,6 +29,7 @@ import java.util.UUID;
  * 处理秒杀商品的Service
  */
 @Service
+@Slf4j
 public class SeckillSkuServiceImpl implements SeckillSkuService {
 
     @Autowired
@@ -46,7 +48,7 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
 
     public static final String SKU_CACHE_REDIS_OPS = "seckill:skuInfo:";
 
-    public static final String SESSION_SKU_SEMAPHORE = "seckillSkuSemaphore_";
+    public static final String SESSION_SKU_SEMAPHORE = "seckill:skuSemaphore:";
 
     @Override
     public void uploadSeckillSkuLast3Days() {
@@ -75,8 +77,11 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
                         skuRedisVo.setEndDate(session.getEndTime());
                         saveSeckillSkuInfo(skuRedisVo);
                         //通过Redisson分布式锁-信号量控制秒杀请求
-                        RSemaphore semaphore = redissonClient.getSemaphore(SESSION_SKU_SEMAPHORE + skuRedisVo.getId());
-                        semaphore.trySetPermits(skuRedisVo.getSeckillLimit().intValue());
+                        if(!redisTemplate.hasKey(SESSION_SKU_SEMAPHORE + skuRedisVo.getPromotionSessionId()+"_"+skuRedisVo.getSkuId().toString())){
+                            RSemaphore semaphore = redissonClient.getSemaphore(SESSION_SKU_SEMAPHORE + skuRedisVo.getPromotionSessionId()+"_"+skuRedisVo.getSkuId().toString());
+                            semaphore.trySetPermits(skuRedisVo.getSeckillLimit().intValue());
+                        }
+
                     });
 
 
@@ -92,14 +97,23 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
      * @param session
      */
     private void saveSeckillSession(SeckillSessionRedisVo session){
+
         String key =SESSION_INFO_REDIS_PREFIX+session.getStartTime().getTime()+"_"+session.getEndTime().getTime();
         String value = JSON.toJSONString(session);
-        redisTemplate.opsForValue().set(key,value);
+        if(!redisTemplate.hasKey(key)){ //防止重复上传秒杀活动
+            log.info("每日秒杀活动信息保存至Redis==>{}",session);
+            redisTemplate.opsForValue().set(key,value);
+        }
     }
 
     private void saveSeckillSkuInfo(SeckillSkuRedisVo skuInfoVo){
+
         BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(SKU_CACHE_REDIS_OPS+skuInfoVo.getId());
-        ops.put(skuInfoVo.getId().toString(),JSON.toJSONString(skuInfoVo));
+        String key = skuInfoVo.getPromotionSessionId()+"_"+skuInfoVo.getId().toString();
+        if(!ops.hasKey(key)){
+            log.info("每日秒杀活动信息保存至Redis==>",skuInfoVo);
+            ops.put(key,JSON.toJSONString(skuInfoVo));
+        }
 
 
 
