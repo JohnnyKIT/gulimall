@@ -9,6 +9,7 @@ import com.situjunjie.gulimallseckill.feign.ProductFeignService;
 import com.situjunjie.gulimallseckill.service.SeckillSkuService;
 import com.situjunjie.gulimallseckill.feign.CouponFeignService;
 import com.situjunjie.gulimallseckill.vo.SeckillSkuRedisVo;
+import com.situjunjie.gulimallseckill.vo.SeckillSkuRelationEntity;
 import com.situjunjie.gulimallseckill.vo.to.SeckillSessionInfoTo;
 import com.situjunjie.gulimallseckill.vo.to.SeckillSessionRedisVo;
 import lombok.extern.slf4j.Slf4j;
@@ -17,13 +18,13 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
+import org.springframework.data.redis.core.BoundListOperations;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 处理秒杀商品的Service
@@ -58,13 +59,13 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
             });
             if(sessions!=null && !sessions.isEmpty()){
                 sessions.stream().forEach(session->{
-                //1.第一步需要缓存活动信息
-                    SeckillSessionRedisVo sessionVo = new SeckillSessionRedisVo();
-                    BeanUtils.copyProperties(session,sessionVo);
-                    saveSeckillSession(sessionVo);
-                //2.第二部缓存活动的商品信息
-                    List<SeckillSkuRedisVo> skuVos = new ArrayList<SeckillSkuRedisVo>();
+                    List<String> seckill = new ArrayList<String>();
                     session.getRelationSkus().stream().forEach(seckillSku->{
+                        //1.第一步需要缓存活动信息
+                        seckill.add(session.getId()+"_"+seckillSku.getId());
+                        SeckillSessionRedisVo sessionVo = new SeckillSessionRedisVo();
+                        BeanUtils.copyProperties(session,sessionVo);
+
                         SeckillSkuRedisVo skuRedisVo = new SeckillSkuRedisVo();
                         BeanUtils.copyProperties(seckillSku,skuRedisVo);
                         R skuInfo = productFeignService.getSkuInfo(seckillSku.getSkuId());
@@ -83,6 +84,8 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
                         }
 
                     });
+                    saveSeckillSession(session,seckill);
+
 
 
                 });
@@ -93,17 +96,41 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
     }
 
     /**
+     * 获取当前活动的所有秒杀商品
+     * @return
+     */
+    @Override
+    public List<SeckillSkuRedisVo> getCurrentSeckillSku() {
+        Long currentTime = new Date().getTime();
+        //查询所有秒杀活动的key
+        Set<String> keys = redisTemplate.keys(SESSION_INFO_REDIS_PREFIX + "*");
+        //筛选得到所有当前正在进行的活动
+        keys.stream().forEach(key -> {
+            String[] strings = key.replace(SESSION_INFO_REDIS_PREFIX, "").split("_");
+            Long startDate = Long.parseLong(strings[0]);
+            Long endDate = Long.parseLong(strings[1]);
+            if (currentTime > startDate && currentTime < endDate) {
+                //活动是当前的
+
+            }
+        });
+        List<String> seckillSessions = redisTemplate.opsForValue().multiGet(keys);
+
+        return null;
+    }
+
+    /**
      * 保存秒杀活动信息到Redis
      * @param session
+     * @param seckillSku
      */
-    private void saveSeckillSession(SeckillSessionRedisVo session){
+    private void saveSeckillSession(SeckillSessionInfoTo session, List<String> seckillSku){
 
         String key =SESSION_INFO_REDIS_PREFIX+session.getStartTime().getTime()+"_"+session.getEndTime().getTime();
-        String value = JSON.toJSONString(session);
-        if(!redisTemplate.hasKey(key)){ //防止重复上传秒杀活动
-            log.info("每日秒杀活动信息保存至Redis==>{}",session);
-            redisTemplate.opsForValue().set(key,value);
+        if(!redisTemplate.hasKey(key)){
+            redisTemplate.opsForList().leftPushAll(key,seckillSku);
         }
+
     }
 
     private void saveSeckillSkuInfo(SeckillSkuRedisVo skuInfoVo){
