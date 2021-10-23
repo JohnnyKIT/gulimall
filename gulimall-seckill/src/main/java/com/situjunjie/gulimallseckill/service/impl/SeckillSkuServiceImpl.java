@@ -101,6 +101,7 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
      */
     @Override
     public List<SeckillSkuRedisVo> getCurrentSeckillSku() {
+        List<SeckillSkuRedisVo> rs = new ArrayList<>();
         Long currentTime = new Date().getTime();
         //查询所有秒杀活动的key
         Set<String> keys = redisTemplate.keys(SESSION_INFO_REDIS_PREFIX + "*");
@@ -111,12 +112,19 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
             Long endDate = Long.parseLong(strings[1]);
             if (currentTime > startDate && currentTime < endDate) {
                 //活动是当前的
-
+                List<String> skuHashKey = redisTemplate.opsForList().range(key, -100, 100);
+                if (skuHashKey!=null && !skuHashKey.isEmpty()){
+                    String sessionId = skuHashKey.get(0).split("_")[0];
+                    skuHashKey.stream().forEach(hashKey->{
+                        BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(SKU_CACHE_REDIS_OPS + sessionId);
+                        String skuInfoStr = hashOps.get(hashKey);
+                        SeckillSkuRedisVo skuRedisVo = JSON.parseObject(skuInfoStr, SeckillSkuRedisVo.class);
+                        rs.add(skuRedisVo);
+                    });
+                }
             }
         });
-        List<String> seckillSessions = redisTemplate.opsForValue().multiGet(keys);
-
-        return null;
+        return rs;
     }
 
     /**
@@ -135,7 +143,7 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
 
     private void saveSeckillSkuInfo(SeckillSkuRedisVo skuInfoVo){
 
-        BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(SKU_CACHE_REDIS_OPS+skuInfoVo.getId());
+        BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(SKU_CACHE_REDIS_OPS+skuInfoVo.getPromotionSessionId());
         String key = skuInfoVo.getPromotionSessionId()+"_"+skuInfoVo.getId().toString();
         if(!ops.hasKey(key)){
             log.info("每日秒杀活动信息保存至Redis==>",skuInfoVo);
