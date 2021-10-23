@@ -1,3 +1,5 @@
+server:
+  port: 13004
 spring:
   cloud:
     nacos:

@@ -119,6 +119,7 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
                         BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(SKU_CACHE_REDIS_OPS + sessionId);
                         String skuInfoStr = hashOps.get(hashKey);
                         SeckillSkuRedisVo skuRedisVo = JSON.parseObject(skuInfoStr, SeckillSkuRedisVo.class);
+                        skuRedisVo.setToken(null);
                         rs.add(skuRedisVo);
                     });
                 }
