@@ -504,9 +504,15 @@
 									<span>￥</span>
 									<span th:text="${#numbers.formatDecimal(item.info.price,3,2)}">4499.00</span>
 								</li>
-								<li>
-									预约享资格
+								<li>预约享资格</li>
+								<li th:if="${seckillInfo!=null && seckillInfo.getStartDate().getTime()<#dates.createNow().getTime()}"
+									th:text="'秒杀已经开始，秒杀价:￥'+${#numbers.formatDecimal(seckillInfo.getSeckillPrice(),3,2)}"
+								>
+								<li th:if="${seckillInfo!=null && seckillInfo.getStartDate().getTime()>#dates.createNow().getTime()}"
+									th:text="'商品即将秒杀，秒杀时间:'+${#dates.format(seckillInfo.startDate,'yyyy-MM-dd HH:mm:ss')}"
+								>
 								</li>
+
 								<li>
 									<a href="">
 										预约说明

@@ -129,6 +129,63 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
     }
 
     /**
+     * 根据skuId获取对应sku的秒杀信息
+     * @param skuId
+     * @return
+     */
+    @Override
+    public SeckillSkuRedisVo getSkuSeckillInfoBySkuId(Long skuId) {
+        //获得这个sku的所有秒杀商品信息
+        Set<String> seckillSkuHashKeys = redisTemplate.keys(SKU_CACHE_REDIS_OPS + "*");
+        ArrayList<SeckillSkuRedisVo> seckillVos = new ArrayList<>();
+        seckillSkuHashKeys.stream().forEach(hashKey->{
+            BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(hashKey);
+            List<String> jsonStrList = hashOps.multiGet(hashOps.keys());
+            jsonStrList.stream().forEach(jsonStr -> {
+                SeckillSkuRedisVo skuRedisVo = JSON.parseObject(jsonStr, SeckillSkuRedisVo.class);
+                if (skuId.equals(skuRedisVo.getSkuId())) {
+                    seckillVos.add(skuRedisVo);
+                }
+            });
+        });
+        //从同一个商品多个秒杀活动选取最近开始的秒杀信息进行返回
+        return selectLastestSeckillSku(seckillVos);
+    }
+
+    /**
+     * 从同一个商品多个秒杀活动选取最近开始的秒杀信息进行返回
+     * @param seckillVos
+     * @return
+     */
+    private SeckillSkuRedisVo selectLastestSeckillSku(ArrayList<SeckillSkuRedisVo> seckillVos) {
+        if(seckillVos==null || seckillVos.isEmpty()){
+            return null;
+        }
+        Date current = new Date();
+        SeckillSkuRedisVo seckillSku = null;
+        for (SeckillSkuRedisVo item: seckillVos
+             ) {
+            if (item.getEndDate().after(current)){//过滤已结束的秒杀场次
+                if (seckillSku==null){
+                    seckillSku = item;
+                }
+                long start = seckillSku.getStartDate().getTime();
+                if(start<current.getTime()){
+                    //直接返回已经开始的
+                    return item;
+                }else{
+                    if(item.getStartDate().getTime()<seckillSku.getStartDate().getTime()){
+                        seckillSku = item;
+                    }
+                }
+
+
+            }
+        }
+        return seckillSku;
+    }
+
+    /**
      * 保存秒杀活动信息到Redis
      * @param session
      * @param seckillSku

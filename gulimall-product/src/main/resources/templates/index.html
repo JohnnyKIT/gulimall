@@ -594,10 +594,17 @@
       window.location.href="http://search.gulimall.com/list.html?keyword="+keyword;
   }
 
+  /**
+   * 用于跳转到商品详情页的跳转方法
+   * @param skuId
+   */
   function to_href(skuId){
     location.href="http://gulimall.com/"+skuId+".html";
   }
 
+  /**
+   * 查询秒杀活动和秒杀商品渲染首页秒杀信息
+   */
   $.get("http://seckill.gulimall.com/seckill/currentSeckillSku",function(res){
     if(res.code ==0){//调用成功
       res.data.forEach(function(item){
