@@ -593,11 +593,16 @@
       var keyword=$("#searchText").val()
       window.location.href="http://search.gulimall.com/list.html?keyword="+keyword;
   }
+
+  function to_href(skuId){
+    location.href="http://gulimall.com/"+skuId+".html";
+  }
+
   $.get("http://seckill.gulimall.com/seckill/currentSeckillSku",function(res){
     if(res.code ==0){//调用成功
       res.data.forEach(function(item){
         console.log("获取当前秒杀商品",item);
-        $("<li></li>")
+        $("<li onclick='to_href("+item.skuId+")'></li>")
                 .append($("<img style='height: 130px;width: 130px' src="+item.skuInfo.skuDefaultImg+"></img>"))
                 .append($("<p>"+item.skuInfo.skuTitle+"</p>"))
                 .append($("<span>¥"+item.seckillPrice+"</span>"))
