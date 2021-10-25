@@ -180,7 +180,7 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
             //处于秒杀时间范围内 继续校验token随机码
             if(seckillSkuInfo.getToken().equals(token)){
                 //校验是否买过了
-                Boolean hasOrderd = redisTemplate.opsForValue().setIfAbsent(SECKILL_ORDERD + user.getId(), num.toString());
+                redisTemplate.opsForValue().setIfAbsent(SECKILL_ORDERD + user.getId(), num.toString());
                 //随机码校验成功 准备开始占用Semaphore信号量
                 RSemaphore semaphore = redissonClient.getSemaphore(SESSION_SKU_SEMAPHORE + "_" + sessionId + "_" + seckillSkuInfo.getSkuId());
                 try {
