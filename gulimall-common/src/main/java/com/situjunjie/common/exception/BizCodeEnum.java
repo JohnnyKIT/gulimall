@@ -9,6 +9,7 @@ public enum BizCodeEnum {
     VALID_EXPTION(10001,"参数校验异常"),
     SQL_EXPTION(10002,"SQL异常"),
     SMS_CODE_TOOFAST(10003,"获取短信验证码过于频繁"),
+    TOO_MANY_REQUEST(10004,"请求量过大"),
     USERNAME_EXISTS_EXCETION(20001,"用户名已存在"),
     USERNAME_PASSWORD_INVALID_EXCEPTION(20002,"用户名或密码错误"),
     NO_STOCK_EXCEPTION(30000,"库存不足");
