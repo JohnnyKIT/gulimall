@@ -643,7 +643,12 @@
 
 								</div>
 							</div>
-							<div class="box-btns-two">
+							<div class="box-btns-two" th:if="${seckillInfo!=null && seckillInfo.getStartDate().getTime()<#dates.createNow().getTime()}">
+								<a href="#" class="seckKillA" th:attr="sessionId=${seckillInfo.getPromotionSessionId()},seckillId=${seckillInfo.id},token=${seckillInfo.token}">
+									立即秒杀
+								</a>
+							</div>
+							<div class="box-btns-two" th:if="${seckillInfo!=null && seckillInfo.getStartDate().getTime()>#dates.createNow().getTime()}">
 								<a href="#" class="addToCartA" th:attr="skuId=${item.info.skuId}">
 									加入购物车
 								</a>
@@ -1305,6 +1310,19 @@
 			let skuId = $(this).attr("skuId");
 			location.href = "http://cart.gulimall.com/addToCard?skuId="+skuId+"&num="+num;
 			return false;
+		});
+
+		$(".seckKillA").click(function(){
+			var isLogin = [[${session.memberInfo!=null}]];
+			if(isLogin){
+				var seckillId = $(this).attr("sessionid")+"_"+$(this).attr("seckillid");
+				var token = $(this).attr("token");
+				location.href="http://seckill.gulimall.com/kill?seckillId="+seckillId+"&token="+token;
+				return false;
+			}else{
+				alert("秒杀前请先登录")
+			return false;
+			}
 		});
 
 
