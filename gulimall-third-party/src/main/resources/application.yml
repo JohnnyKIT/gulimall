@@ -7,6 +7,10 @@ spring:
     nacos:
       discovery:
         server-addr: 192.168.56.1:8848
+    sentinel:
+      transport:
+        dashboard: 192.168.56.1:8080
+        port: 8719
 third-party:
   sms:
     host: http://dingxin.market.alicloudapi.com

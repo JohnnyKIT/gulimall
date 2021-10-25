@@ -11,6 +11,10 @@ spring:
     nacos:
       discovery:
         server-addr: http://192.168.56.1:8848/
+    sentinel:
+      transport:
+        dashboard: 192.168.56.1:8080
+        port: 8719
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
   rabbitmq:
