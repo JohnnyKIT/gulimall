@@ -1317,7 +1317,8 @@
 			if(isLogin){
 				var seckillId = $(this).attr("sessionid")+"_"+$(this).attr("seckillid");
 				var token = $(this).attr("token");
-				location.href="http://seckill.gulimall.com/kill?seckillId="+seckillId+"&token="+token;
+				var num = $("#numInput").val();
+				location.href="http://seckill.gulimall.com/kill?seckillId="+seckillId+"&token="+token+"&num="+num;
 				return false;
 			}else{
 				alert("秒杀前请先登录")

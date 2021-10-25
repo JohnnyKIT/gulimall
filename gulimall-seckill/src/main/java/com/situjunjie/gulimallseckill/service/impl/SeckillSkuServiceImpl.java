@@ -2,10 +2,12 @@ package com.situjunjie.gulimallseckill.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.situjunjie.common.to.MemberEntity;
 import com.situjunjie.common.to.SkuInfoEntity;
 import com.situjunjie.common.to.SkuInfoTo;
 import com.situjunjie.common.utils.R;
 import com.situjunjie.gulimallseckill.feign.ProductFeignService;
+import com.situjunjie.gulimallseckill.interceptor.LoginUserInterceptor;
 import com.situjunjie.gulimallseckill.service.SeckillSkuService;
 import com.situjunjie.gulimallseckill.feign.CouponFeignService;
 import com.situjunjie.gulimallseckill.vo.SeckillSkuRedisVo;
@@ -24,6 +26,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +53,8 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
     public static final String SKU_CACHE_REDIS_OPS = "seckill:skuInfo:";
 
     public static final String SESSION_SKU_SEMAPHORE = "seckill:skuSemaphore:";
+
+    public static final String SECKILL_ORDERD = "seckill:orderd:";
 
     @Override
     public void uploadSeckillSkuLast3Days() {
@@ -150,6 +155,43 @@ public class SeckillSkuServiceImpl implements SeckillSkuService {
         });
         //从同一个商品多个秒杀活动选取最近开始的秒杀信息进行返回
         return selectLastestSeckillSku(seckillVos);
+    }
+
+    /**
+     * 秒杀主业务方法
+     * @param killId  1_1
+     * @param token 随机码
+     * @param num 秒杀数量
+     */
+    @Override
+    public void kill(String killId, String token, Integer num) {
+
+        MemberEntity user = LoginUserInterceptor.threadLocal.get();
+
+        //1.获取秒杀商品具体信息
+        String sessionId = killId.split("_")[0];
+        BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(SKU_CACHE_REDIS_OPS + sessionId);
+        String jsonStr = hashOps.get(killId);
+        //得到秒杀商品详情信息
+        SeckillSkuRedisVo seckillSkuInfo = JSON.parseObject(jsonStr, SeckillSkuRedisVo.class);
+        //2. 校验时间合法性
+        Date current = new Date();
+        if(current.after(seckillSkuInfo.getStartDate()) && current.before(seckillSkuInfo.getEndDate())){
+            //处于秒杀时间范围内 继续校验token随机码
+            if(seckillSkuInfo.getToken().equals(token)){
+                //校验是否买过了
+                Boolean hasOrderd = redisTemplate.opsForValue().setIfAbsent(SECKILL_ORDERD + user.getId(), num.toString());
+                //随机码校验成功 准备开始占用Semaphore信号量
+                RSemaphore semaphore = redissonClient.getSemaphore(SESSION_SKU_SEMAPHORE + "_" + sessionId + "_" + seckillSkuInfo.getSkuId());
+                try {
+                    semaphore.tryAcquire(num,seckillSkuInfo.getEndDate().getTime()-current.getTime(), TimeUnit.MILLISECONDS);
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 
     /**

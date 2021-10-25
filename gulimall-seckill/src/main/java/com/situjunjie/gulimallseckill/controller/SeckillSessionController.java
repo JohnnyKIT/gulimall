@@ -33,9 +33,10 @@ public class SeckillSessionController {
 
     @GetMapping("/kill")
     public R seckillKill(@RequestParam("seckillId") String killId,
-                         @RequestParam("token") String token){
-
-        log.info("正在进行秒杀==>killId = {},token = {}",killId,token);
+                         @RequestParam("token") String token,
+                         @RequestParam("num") Integer num){
+        log.info("正在进行秒杀==>killId = {},token = {}",killId,token,num);
+        seckillSkuService.kill(killId,token,num); //秒杀主业务方法
         return null;
     }
 
